@@ -503,6 +503,83 @@
   .ord-status.delivered { background:rgba(95,190,126,.12);color:var(--success);border:1px solid rgba(95,190,126,.25) }
   .ord-status.cancelled { background:rgba(224,95,95,.1);color:var(--danger);border:1px solid rgba(224,95,95,.2) }
 
+  /* ── ORDER DETAIL MODAL ── */
+  .order-modal-overlay {
+    position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;
+    display:none;align-items:center;justify-content:center;
+    backdrop-filter:blur(10px);padding:20px;
+  }
+  .order-modal-overlay.open { display:flex; }
+  .order-modal-box {
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:16px;width:680px;max-width:100%;max-height:88vh;
+    overflow-y:auto;position:relative;
+    box-shadow:0 40px 100px rgba(0,0,0,0.6);
+    animation:fadeUp .3s ease;
+  }
+  .order-modal-box::-webkit-scrollbar{width:4px}
+  .order-modal-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .omd-header {
+    display:flex;align-items:flex-start;justify-content:space-between;
+    padding:28px 28px 20px;border-bottom:1px solid var(--border);
+    position:sticky;top:0;background:var(--surface);z-index:2;
+  }
+  .omd-ref { font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--accent); }
+  .omd-meta { font-size:0.72rem;color:var(--muted);margin-top:4px; }
+  .omd-close {
+    background:none;border:1px solid var(--border);border-radius:6px;
+    color:var(--muted);width:32px;height:32px;cursor:pointer;font-size:1rem;
+    display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;
+  }
+  .omd-close:hover{border-color:var(--danger);color:var(--danger);}
+  .omd-body { padding:24px 28px; }
+  .omd-section { margin-bottom:24px; }
+  .omd-section-title {
+    font-size:0.62rem;letter-spacing:3px;text-transform:uppercase;
+    color:var(--muted);font-weight:600;margin-bottom:14px;
+    padding-bottom:8px;border-bottom:1px solid var(--border);
+  }
+  .omd-item-row {
+    display:flex;align-items:center;gap:14px;
+    padding:12px 0;border-bottom:1px solid rgba(42,42,42,0.5);
+  }
+  .omd-item-row:last-child{border-bottom:none;}
+  .omd-item-img {
+    width:52px;height:64px;border-radius:7px;background:var(--surface2);
+    display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+    flex-shrink:0;border:1px solid var(--border);overflow:hidden;
+  }
+  .omd-item-img img{width:100%;height:100%;object-fit:cover;border-radius:6px;}
+  .omd-item-info{flex:1;}
+  .omd-item-name{font-weight:600;font-size:0.88rem;margin-bottom:3px;}
+  .omd-item-meta{font-size:0.72rem;color:var(--muted);}
+  .omd-item-price{font-weight:700;color:var(--accent);font-size:0.92rem;white-space:nowrap;}
+  .omd-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .omd-field{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+  .omd-field-label{font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+  .omd-field-val{font-size:0.84rem;font-weight:500;}
+  .omd-totals{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+  .omd-total-row{display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:8px;color:var(--muted);}
+  .omd-total-row:last-child{margin-bottom:0;padding-top:10px;border-top:1px solid var(--border);font-size:1rem;font-weight:700;color:var(--text);}
+  .omd-total-row span:last-child{color:var(--accent);}
+  .omd-status-row{display:flex;align-items:center;gap:10px;margin-top:18px;}
+  .omd-status-select{
+    flex:1;background:var(--surface2);border:1px solid var(--border);
+    border-radius:8px;padding:10px 14px;color:var(--text);
+    font-family:'DM Sans',sans-serif;font-size:0.84rem;outline:none;cursor:pointer;
+  }
+  .omd-save-btn{
+    background:var(--accent);color:#0a0a0a;border:none;border-radius:8px;
+    padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:0.78rem;
+    font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;
+    transition:background .2s,transform .2s;white-space:nowrap;
+  }
+  .omd-save-btn:hover{background:var(--accent2);transform:translateY(-1px);}
+  .ord-status.processing { background:rgba(95,190,126,.08);color:#7dd4a0;border:1px solid rgba(95,190,126,.2) }
+  .ord-status.shipped { background:rgba(100,160,255,.1);color:#80b0ff;border:1px solid rgba(100,160,255,.2) }
+  .ord-status.delivered { background:rgba(95,190,126,.12);color:var(--success);border:1px solid rgba(95,190,126,.25) }
+  .ord-status.cancelled { background:rgba(224,95,95,.1);color:var(--danger);border:1px solid rgba(224,95,95,.2) }
+
   /* STATUS SELECT */
   .status-select { background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.73rem;padding:5px 10px;cursor:pointer;outline:none;transition:border-color .2s }
   .status-select:focus { border-color:rgba(232,196,122,.4) }
@@ -841,7 +918,7 @@
           <div class="table-loading" id="ordersLoading"><div class="spinner"></div><br>Loading orders…</div>
           <table id="ordersTable" style="display:none">
             <thead><tr>
-              <th>Reference</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th>
+              <th>Reference</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Detail</th>
             </tr></thead>
             <tbody id="ordersBody"></tbody>
           </table>
@@ -1500,46 +1577,132 @@ function renderOrders(orders) {
   if (!orders.length) { table.style.display='none'; empty.style.display='block'; return; }
   table.style.display='table'; empty.style.display='none';
 
-  const statusOpts = ['pending','processing','shipped','delivered','cancelled']
-    .map(s => '<option value="'+s+'">' + s.charAt(0).toUpperCase()+s.slice(1) + '</option>').join('');
-
   tbody.innerHTML = orders.map(o => {
     const date = o.created_at ? new Date(o.created_at).toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}) : '—';
     const items = Array.isArray(o.items) ? o.items : [];
-    const itemSummary = items.length ? items.map(i=>i.name).join(', ').substring(0,40) + (items.map(i=>i.name).join(', ').length > 40 ? '…' : '') : '—';
+    const itemSummary = items.length
+      ? items.map(i=>i.name).join(', ').substring(0,38) + (items.map(i=>i.name).join(', ').length > 38 ? '…' : '')
+      : '—';
     const ref = (o.payment_reference || '#' + o.id || '—').toUpperCase();
     const payLabel = o.payment_method === 'paystack' ? '💳 Card' : '💵 COD';
+    const statusClass = o.status || 'pending';
 
     return '<tr>' +
       '<td><span style="color:var(--accent);font-weight:600;font-size:.8rem">' + ref + '</span></td>' +
       '<td><div style="font-weight:500;font-size:.83rem">' + (o.customer_name||'—') + '</div><div style="font-size:.7rem;color:var(--muted)">' + (o.customer_email||'') + '</div></td>' +
-      '<td style="font-size:.78rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + itemSummary + '<br><span style="color:var(--muted);font-size:.7rem">' + items.length + ' item' + (items.length!==1?'s':'') + '</span></td>' +
+      '<td style="font-size:.78rem;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + itemSummary + '<br><span style="color:var(--muted);font-size:.7rem">' + items.length + ' item' + (items.length!==1?'s':'') + '</span></td>' +
       '<td><span style="color:var(--accent);font-weight:700">₦' + (o.total||0).toLocaleString() + '</span></td>' +
       '<td style="font-size:.78rem;color:var(--muted)">' + payLabel + '</td>' +
-      '<td><span class="ord-status ' + (o.status||'pending') + '">' + (o.status||'pending') + '</span></td>' +
+      '<td><span class="ord-status ' + statusClass + '" id="pill-' + o.id + '">' + statusClass + '</span></td>' +
       '<td style="font-size:.75rem;color:var(--muted)">' + date + '</td>' +
-      '<td><select class="status-select" onchange="updateOrderStatus(' + (o.id||'null') + ', this.value, this)">' +
-        statusOpts.replace('value="'+(o.status||'pending')+'"', 'value="'+(o.status||'pending')+'" selected') +
-      '</select></td>' +
+      '<td><button class="tbl-btn edit" onclick="openOrderModal(' + JSON.stringify(o).replace(/</g,'\u003c').replace(/>/g,'\u003e').replace(/&/g,'\u0026') + ')">View →</button></td>' +
     '</tr>';
   }).join('');
 }
 
-async function updateOrderStatus(id, newStatus, selectEl) {
-  if (!id) { showToast('Demo mode — status not saved', ''); return; }
+async function updateOrderStatus(id, newStatus) {
+  if (!id) return;
   try {
     const { error } = await db.from('orders').update({ status: newStatus }).eq('id', id);
     if (error) throw error;
     const order = allOrders.find(o => o.id === id);
     if (order) order.status = newStatus;
-    showToast('Order status updated to "' + newStatus + '" ✓', 'success');
-    // Update the pill in this row
-    const row = selectEl.closest('tr');
-    const pill = row.querySelector('.ord-status');
+    showToast('Status updated to "' + newStatus + '" ✓', 'success');
+    // Update pill in table row
+    const pill = document.getElementById('pill-' + id);
     if (pill) { pill.className = 'ord-status ' + newStatus; pill.textContent = newStatus; }
+    // Update pill in modal header if open
+    const modalPill = document.getElementById('omdStatusPill');
+    if (modalPill) { modalPill.className = 'ord-status ' + newStatus; modalPill.textContent = newStatus; }
   } catch(e) {
     showToast('Update failed: ' + e.message, 'error');
   }
+}
+
+const EMOJIS_ADMIN = {Men:'👔',Women:'👗',Kids:'🧸',Shirts:'👕',Dresses:'👗',Trousers:'👖',Jackets:'🧥',Accessories:'🧣',default:'🧣'};
+
+function openOrderModal(o) {
+  const ref = (o.payment_reference || '#' + o.id || '—').toUpperCase();
+  const date = o.created_at ? new Date(o.created_at).toLocaleString('en-NG',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+  const items = Array.isArray(o.items) ? o.items : [];
+  const payLabel = o.payment_method === 'paystack' ? '💳 Card / Bank Transfer' : '💵 Pay on Delivery';
+  const statusList = ['pending','processing','shipped','delivered','cancelled'];
+
+  document.getElementById('omdRef').textContent = ref;
+  document.getElementById('omdMeta').innerHTML =
+    date + ' &nbsp;·&nbsp; ' +
+    '<span class="ord-status ' + (o.status||'pending') + '" id="omdStatusPill">' + (o.status||'pending') + '</span>';
+
+  // Build items HTML
+  const itemsHtml = items.length ? items.map(item => {
+    const imgHtml = item.image_url
+      ? '<img src="' + item.image_url + '" alt="' + (item.name||'') + '">'
+      : (EMOJIS_ADMIN[item.category] || EMOJIS_ADMIN.default);
+    return '<div class="omd-item-row">' +
+      '<div class="omd-item-img">' + imgHtml + '</div>' +
+      '<div class="omd-item-info">' +
+        '<div class="omd-item-name">' + (item.name||'Unknown') + '</div>' +
+        '<div class="omd-item-meta">Size: ' + (item.size||'—') + ' &nbsp;·&nbsp; Qty: ' + (item.qty||1) + ' &nbsp;·&nbsp; Cat: ' + (item.category||'—') + '</div>' +
+      '</div>' +
+      '<div class="omd-item-price">₦' + ((item.price||0) * (item.qty||1)).toLocaleString() + '</div>' +
+    '</div>';
+  }).join('') : '<p style="color:var(--muted);font-size:.82rem">No item details attached.</p>';
+
+  // Totals
+  const subtotal = o.subtotal || o.total || 0;
+  const delivery = o.delivery_fee != null ? o.delivery_fee : (subtotal >= 15000 ? 0 : 1500);
+  const discount = o.discount || 0;
+  const total = o.total || (subtotal + delivery - discount);
+
+  const totalsHtml = '<div class="omd-totals">' +
+    '<div class="omd-total-row"><span>Subtotal</span><span>₦' + subtotal.toLocaleString() + '</span></div>' +
+    '<div class="omd-total-row"><span>Delivery</span><span>' + (delivery === 0 ? 'Free' : '₦' + delivery.toLocaleString()) + '</span></div>' +
+    (discount ? '<div class="omd-total-row"><span>Discount</span><span style="color:var(--success)">−₦' + discount.toLocaleString() + '</span></div>' : '') +
+    (o.promo_code ? '<div class="omd-total-row"><span>Promo code</span><span>' + o.promo_code + '</span></div>' : '') +
+    '<div class="omd-total-row"><span>Total</span><span>₦' + total.toLocaleString() + '</span></div>' +
+  '</div>';
+
+  // Customer & delivery fields
+  const fieldsHtml = '<div class="omd-grid-2">' +
+    '<div class="omd-field"><div class="omd-field-label">Customer</div><div class="omd-field-val">' + (o.customer_name||'—') + '</div></div>' +
+    '<div class="omd-field"><div class="omd-field-label">Email</div><div class="omd-field-val" style="word-break:break-all">' + (o.customer_email||'—') + '</div></div>' +
+    '<div class="omd-field"><div class="omd-field-label">Phone</div><div class="omd-field-val">' + (o.customer_phone||'—') + '</div></div>' +
+    '<div class="omd-field"><div class="omd-field-label">Payment</div><div class="omd-field-val">' + payLabel + '</div></div>' +
+    '<div class="omd-field" style="grid-column:1/-1"><div class="omd-field-label">Delivery Address</div><div class="omd-field-val">' + (o.delivery_address||'—') + '</div></div>' +
+    (o.delivery_note ? '<div class="omd-field" style="grid-column:1/-1"><div class="omd-field-label">Delivery Note</div><div class="omd-field-val">' + o.delivery_note + '</div></div>' : '') +
+  '</div>';
+
+  // Status update control
+  const statusOptsHtml = statusList.map(s =>
+    '<option value="' + s + '"' + (s === (o.status||'pending') ? ' selected' : '') + '>' + s.charAt(0).toUpperCase() + s.slice(1) + '</option>'
+  ).join('');
+  const statusCtrlHtml = '<div class="omd-status-row">' +
+    '<select class="omd-status-select" id="omdStatusSelect">' + statusOptsHtml + '</select>' +
+    '<button class="omd-save-btn" onclick="saveModalStatus(' + o.id + ')">Save Status</button>' +
+  '</div>';
+
+  document.getElementById('omdBody').innerHTML =
+    '<div class="omd-section"><div class="omd-section-title">Items Ordered (' + items.length + ')</div>' + itemsHtml + '</div>' +
+    '<div class="omd-section"><div class="omd-section-title">Customer & Delivery</div>' + fieldsHtml + '</div>' +
+    '<div class="omd-section"><div class="omd-section-title">Payment Summary</div>' + totalsHtml + '</div>' +
+    '<div class="omd-section"><div class="omd-section-title">Update Order Status</div>' + statusCtrlHtml + '</div>';
+
+  document.getElementById('orderModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // store current order id for save
+  document.getElementById('orderModalBox').dataset.orderId = o.id;
+}
+
+async function saveModalStatus(id) {
+  const sel = document.getElementById('omdStatusSelect');
+  if (!sel || !id) return;
+  await updateOrderStatus(id, sel.value);
+}
+
+function closeOrderModal() {
+  document.getElementById('orderModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 
@@ -1643,5 +1806,19 @@ function showToast(msg, type) {
   setTimeout(() => { if (el.parentNode) el.remove(); }, 3500);
 }
 </script>
+<!-- ORDER DETAIL MODAL -->
+<div class="order-modal-overlay" id="orderModalOverlay" onclick="if(event.target===this)closeOrderModal()">
+  <div class="order-modal-box" id="orderModalBox">
+    <div class="omd-header">
+      <div>
+        <div class="omd-ref" id="omdRef">—</div>
+        <div class="omd-meta" id="omdMeta">—</div>
+      </div>
+      <button class="omd-close" onclick="closeOrderModal()">✕</button>
+    </div>
+    <div class="omd-body" id="omdBody"></div>
+  </div>
+</div>
+
 </body>
 </html>
