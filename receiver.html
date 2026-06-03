@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Puppeteer: Receiver Dashboard</title>
+    <title>Face Puppeteer: Real Photo Mesh</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -17,70 +17,53 @@
         }
         h1 { margin-bottom: 5px; color: #38bdf8; }
         #status { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
-        
+
         .dashboard {
             display: flex;
-            flex-direction: column; /* Stacked layout for great mobile compatibility */
+            flex-direction: column;
             gap: 20px;
-            max-width: 900px;
+            max-width: 1000px;
             width: 100%;
         }
 
         @media (min-width: 768px) {
-            .dashboard {
-                flex-direction: row; /* Side-by-side split screen layout for laptops/tablets */
-            }
+            .dashboard { flex-direction: row; }
         }
-        
+
         .canvas-container {
-            flex: 1;
+            flex: 1.5;
             background-color: #1e293b;
             border-radius: 12px;
             padding: 20px;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 400px;
+            min-height: 450px;
             border: 2px solid #334155;
-            perspective: 800px; /* Gives 3D depth to the face rotations */
+            perspective: 1000px;
         }
-        
-        #puppet-face {
-            width: 150px;
-            height: 150px;
-            background-color: #38bdf8;
-            border-radius: 50%;
-            position: relative;
+
+        /* FIX #2: Upload panel is now inside the canvas-container */
+        .upload-panel {
+            margin-bottom: 15px;
+            background: #334155;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #faceCanvas {
+            max-width: 100%;
+            height: auto;
+            background: #0f172a;
+            border-radius: 8px;
             transition: transform 0.05s linear;
             transform-style: preserve-3d;
-        }
-        
-        .eye {
-            width: 25px;
-            height: 25px;
-            background-color: #fff;
-            border-radius: 50%;
-            position: absolute;
-            top: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: height 0.05s ease;
-        }
-        .eye-pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; }
-        #eye-left { left: 30px; }
-        #eye-right { right: 30px; }
-        
-        #mouth {
-            width: 50px;
-            height: 15px;
-            background-color: #1e293b;
-            border-radius: 20px;
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: height 0.05s ease;
         }
 
         .data-card {
@@ -97,22 +80,32 @@
             padding: 12px;
             border-radius: 6px;
             overflow-x: auto;
+            max-height: 350px;
+        }
+
+        #error-msg {
+            color: #f87171;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <h1>Puppet Dashboard</h1>
+    <h1>Photo Puppeteer Dashboard</h1>
     <div id="status">Connecting to Supabase stream...</div>
+    <div id="error-msg"></div>
 
     <div class="dashboard">
         <div class="canvas-container">
-            <div id="puppet-face">
-                <div class="eye" id="eye-left"><div class="eye-pupil"></div></div>
-                <div class="eye" id="eye-right"><div class="eye-pupil"></div></div>
-                <div id="mouth"></div>
+            <!-- FIX #2: upload panel moved inside canvas-container -->
+            <div class="upload-panel">
+                <label for="imageLoader"><b>Upload Target Face Image:</b></label>
+                <input type="file" id="imageLoader" accept="image/*">
             </div>
+            <canvas id="faceCanvas" width="400" height="400"></canvas>
         </div>
 
         <div class="data-card">
@@ -122,54 +115,154 @@
     </div>
 
     <script>
-        // REPLACE THESE with the exact same credentials you used in your app.js
-        const SUPABASE_URL = "https://dmavecishluzeqdddaqy.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_aTPFO65SpkKXmku2Nm7XGQ_tgRcXpFg";
+        // ── Supabase credentials ──────────────────────────────────────────────
+        // FIX #1: Replace the invalid sb_publishable_ key with your real JWT anon key.
+        // The anon key must be a long JWT string starting with "eyJ".
+        // Get it from: Supabase Dashboard → Project Settings → API → anon/public key
+        const SUPABASE_URL    = "https://dmavecishluzeqdddaqy.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_aTPFO65SpkKXmku2Nm7XGQ_tgRcXpFg"; // ← replace with real JWT key
 
-        // Verified Fix: Safely pulling creation module straight from window memory
-        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ── DOM refs ──────────────────────────────────────────────────────────
+        const statusDiv  = document.getElementById("status");
+        const errorMsg   = document.getElementById("error-msg");
+        const streamLog  = document.getElementById("stream-log");
+        const canvas     = document.getElementById("faceCanvas");
+        const ctx        = canvas.getContext("2d");
+        const imageLoader= document.getElementById("imageLoader");
 
-        const statusDiv = document.getElementById("status");
-        const streamLog = document.getElementById("stream-log");
-        
-        const puppetFace = document.getElementById("puppet-face");
-        const eyeLeft = document.getElementById("eye-left");
-        const eyeRight = document.getElementById("eye-right");
-        const mouth = document.getElementById("mouth");
+        // ── Target image ──────────────────────────────────────────────────────
+        const targetImage = new Image();
+        targetImage.crossOrigin = "anonymous";
 
-        const faceChannel = client.channel('puppeteer-room-1');
+        // FIX #3: Attach onload BEFORE setting src so it always fires
+        targetImage.onload = function () { resetFace(); };
+        targetImage.onerror = function () {
+            showError("Failed to load default face image. Please upload one manually.");
+        };
+        targetImage.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=80";
 
-        faceChannel
-          .on('broadcast', { event: 'face-move' }, (response) => {
-              const data = response.payload;
-              
-              streamLog.innerText = JSON.stringify(data, null, 2);
-              
-              const degYaw = data.rotation.yaw * (180 / Math.PI) * 1.5;
-              const degPitch = data.rotation.pitch * (180 / Math.PI) * 1.5;
-              puppetFace.style.transform = `rotateY(${degYaw}deg) rotateX(${degPitch}deg)`;
-              
-              const mouthHeight = 15 + (data.expressions.jawOpen * 40);
-              mouth.style.height = `${mouthHeight}px`;
-              
-              if (data.expressions.eyeBlinkLeft > 0.5) {
-                  eyeLeft.style.height = "2px";
-              } else {
-                  eyeLeft.style.height = "25px";
-              }
-              
-              if (data.expressions.eyeBlinkRight > 0.5) {
-                  eyeRight.style.height = "2px";
-              } else {
-                  eyeRight.style.height = "25px";
-              }
-          })
-          .subscribe((status) => {
-              if (status === 'SUBSCRIBED') {
-                  statusDiv.innerText = "🟢 Connected! Stream data from your phone to animate.";
-                  statusDiv.style.color = "#34d399";
-              }
-          });
+        imageLoader.addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                targetImage.onload = function () { resetFace(); };
+                targetImage.onerror = function () { showError("Could not load the selected image."); };
+                targetImage.src = event.target.result;
+            };
+            reader.onerror = function () { showError("Could not read the selected file."); };
+            reader.readAsDataURL(file);
+        });
+
+        function resetFace() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(targetImage, 0, 0, canvas.width, canvas.height);
+        }
+
+        function showError(msg) {
+            errorMsg.textContent = "⚠️ " + msg;
+            errorMsg.style.display = "block";
+        }
+
+        // ── Supabase realtime ─────────────────────────────────────────────────
+        let supabaseClient;
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) {
+            showError("Supabase init failed: " + e.message);
+        }
+
+        if (supabaseClient) {
+            const faceChannel = supabaseClient.channel("puppeteer-room-1");
+
+            faceChannel
+                .on("broadcast", { event: "face-move" }, (response) => {
+                    const data = response.payload;
+                    streamLog.innerText = JSON.stringify(data, null, 2);
+
+                    // ── 1. 3D Head Rotation ──────────────────────────────────
+                    const degYaw   = data.rotation.yaw   * (180 / Math.PI) * 1.5;
+                    const degPitch = data.rotation.pitch * (180 / Math.PI) * 1.5;
+                    canvas.style.transform = `rotateY(${degYaw}deg) rotateX(${degPitch}deg)`;
+
+                    // ── 2. Expression values ─────────────────────────────────
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    const jaw     = data.expressions.jawOpen        || 0;
+                    const blinkL  = data.expressions.eyeBlinkLeft   || 0;
+                    const blinkR  = data.expressions.eyeBlinkRight  || 0;
+                    const smileL  = data.expressions.mouthSmileLeft  || 0;
+                    const smileR  = data.expressions.mouthSmileRight || 0;
+                    const frownL  = data.expressions.mouthFrownLeft  || 0;
+                    const frownR  = data.expressions.mouthFrownRight || 0;
+
+                    const avgSmile = (smileL + smileR) / 2;
+                    const avgFrown = (frownL + frownR) / 2;
+
+                    // ── 3. Slice layout (non-overlapping) ────────────────────
+                    // FIX #4: Regions are now contiguous, no overlap:
+                    //   Forehead/hair : y 0–130
+                    //   Eyes row      : y 130–185
+                    //   Cheeks        : y 185–240
+                    //   Mouth/jaw     : y 240–340
+                    //   Chin          : y 340–400
+
+                    // Forehead / Hair
+                    ctx.drawImage(targetImage, 0, 0,   400, 130,  0, 0,   400, 130);
+
+                    // Left Eye squash
+                    const hLeftEye  = Math.max(4, 55 * (1 - blinkL * 0.85));
+                    const yOffL = 130 + (55 - hLeftEye) / 2;
+                    ctx.drawImage(targetImage, 30,  130, 130, 55,  30,  yOffL, 130, hLeftEye);
+
+                    // Right Eye squash
+                    const hRightEye = Math.max(4, 55 * (1 - blinkR * 0.85));
+                    const yOffR = 130 + (55 - hRightEye) / 2;
+                    ctx.drawImage(targetImage, 240, 130, 130, 55,  240, yOffR, 130, hRightEye);
+
+                    // Nose bridge (between eyes, unaffected)
+                    ctx.drawImage(targetImage, 160, 130, 80,  55,  160, 130, 80,  55);
+
+                    // Cheeks frame
+                    ctx.drawImage(targetImage, 0, 185, 400, 55,  0, 185, 400, 55);
+
+                    ctx.save();
+
+                    // ── 4. Mouth / Jaw ───────────────────────────────────────
+                    const hMouthDelta = jaw * 35;
+
+                    let expressionYOffset = 0;
+                    if (avgSmile > 0.3)      expressionYOffset = -6;
+                    else if (avgFrown > 0.3) expressionYOffset =  6;
+
+                    ctx.drawImage(
+                        targetImage,
+                        60, 240, 280, 100,
+                        60, 240 + expressionYOffset, 280, 100 + hMouthDelta
+                    );
+
+                    // ── 5. Chin ──────────────────────────────────────────────
+                    // FIX #5: Clamp chin draw position so it never exceeds canvas height
+                    const chinSrcY  = 340;
+                    const chinH     = 60;
+                    const chinDestY = Math.min(340 + hMouthDelta, canvas.height - chinH);
+                    ctx.drawImage(targetImage, 0, chinSrcY, 400, chinH,  0, chinDestY, 400, chinH);
+
+                    ctx.restore();
+                })
+                .subscribe((status) => {
+                    if (status === "SUBSCRIBED") {
+                        statusDiv.innerText      = "🟢 Connected! Ready for custom image processing.";
+                        statusDiv.style.color    = "#34d399";
+                        errorMsg.style.display   = "none";
+                    } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+                        // FIX #6: Surface connection errors
+                        showError(`Supabase channel error: ${status}. Check your ANON KEY and network.`);
+                        statusDiv.innerText   = "🔴 Connection failed.";
+                        statusDiv.style.color = "#f87171";
+                    }
+                });
+        }
     </script>
 </body>
 </html>
