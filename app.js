@@ -1,8 +1,4 @@
 (async function() {
-    // Safely check for MediaPipe globally
-    const FaceLandmarker = window.FaceLandmarker;
-    const FilesetResolver = window.FilesetResolver;
-
     const video = document.getElementById("webcam");
     const startButton = document.getElementById("startButton");
     const dataOutput = document.getElementById("coordinates");
@@ -11,13 +7,30 @@
     let runningMode = "VIDEO";
     let lastVideoTime = -1;
 
+    // Helper function to safely wait for MediaPipe global loading
+    function waitForMediaPipe() {
+        return new Promise((resolve) => {
+            if (window.FaceLandmarker && window.FilesetResolver) {
+                return resolve();
+            }
+            const interval = setInterval(() => {
+                if (window.FaceLandmarker && window.FilesetResolver) {
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 100);
+        });
+    }
+
     async function initializeFaceTracker() {
         try {
             dataOutput.innerText = "Loading AI Models... Please wait.";
 
-            if (!FaceLandmarker || !FilesetResolver) {
-                throw new Error("MediaPipe not loaded from CDN yet.");
-            }
+            // Wait for globals to confidently exist
+            await waitForMediaPipe();
+            
+            const FaceLandmarker = window.FaceLandmarker;
+            const FilesetResolver = window.FilesetResolver;
             
             const filesetResolver = await FilesetResolver.forVisionTasks(
                 "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm"
@@ -54,7 +67,7 @@
             startButton.style.display = "none";
         } catch (err) {
             console.error("Error accessing camera: ", err);
-            dataOutput.innerText = "Camera access denied. Enable camera settings in Safari.";
+            dataOutput.innerText = "Camera access denied or unavailable.";
         }
     }
 
@@ -103,7 +116,6 @@ Right Eye Blink: ${eyeBlinkRight.toFixed(2)}
         `;
     }
 
-    // Initialize inside the safe wrapper
     await initializeFaceTracker();
     startButton.addEventListener("click", startCamera);
 })();
