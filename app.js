@@ -1,5 +1,24 @@
 import { FilesetResolver, FaceLandmarker } from "https://esm.sh/@mediapipe/tasks-vision@0.10.8";
 
+// 1. Initialize Supabase Client
+// REPLACE THESE placeholders with your actual Supabase Project URL and Anon Key
+const SUPABASE_URL = "https://dmavecishluzeqdddaqy.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_aTPFO65SpkKXmku2Nm7XGQ_tgRcXpFg";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Create a unique room channel so your phone and laptop connect to the same place
+const faceChannel = supabase.channel('puppeteer-room-1', {
+  config: { broadcast: { self: false } }, // Don't send data back to ourselves
+});
+
+// Subscribe to the channel
+faceChannel.subscribe((status) => {
+  if (status === 'SUBSCRIBED') {
+    console.log('Connected to real-time bridge!');
+  }
+});
+
 const video = document.getElementById("webcam");
 const startButton = document.getElementById("startButton");
 const dataOutput = document.getElementById("coordinates");
@@ -8,17 +27,14 @@ let faceLandmarker;
 let runningMode = "VIDEO";
 let lastVideoTime = -1;
 
-// 1. Initialize the MediaPipe AI Model
 async function initializeFaceTracker() {
     try {
         dataOutput.innerText = "Loading AI Models... Please wait.";
         
-        // Fetch the fileset assembly elements securely
         const filesetResolver = await FilesetResolver.forVisionTasks(
             "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm"
         );
         
-        // Configure and load the Face Landmarker model
         faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
             baseOptions: {
                 modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
@@ -38,7 +54,6 @@ async function initializeFaceTracker() {
     }
 }
 
-// 2. Activate Phone Camera
 async function startCamera() {
     const constraints = {
         video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
@@ -55,7 +70,6 @@ async function startCamera() {
     }
 }
 
-// 3. The Core Tracking Loop
 async function predictWebcam() {
     let startTimeMs = performance.now();
     
@@ -75,7 +89,6 @@ async function predictWebcam() {
     requestAnimationFrame(predictWebcam);
 }
 
-// 4. Format and render numbers to screen
 function displayTrackingMetrics(results) {
     const blendshapes = results.faceBlendshapes[0].categories;
     
@@ -83,13 +96,15 @@ function displayTrackingMetrics(results) {
     const eyeBlinkLeft = blendshapes.find(shape => shape.categoryName === "eyeBlinkLeft")?.score || 0;
     const eyeBlinkRight = blendshapes.find(shape => shape.categoryName === "eyeBlinkRight")?.score || 0;
     
+    let rotation = { yaw: 0, pitch: 0 };
     let rotationText = "Calculating angle...";
+    
     if (results.facialTransformationMatrixes && results.facialTransformationMatrixes.length > 0) {
         const matrix = results.facialTransformationMatrixes[0].data;
-        const yaw = Math.atan2(-matrix[2], matrix[0]).toFixed(2);   
-        const pitch = Math.atan2(-matrix[6], matrix[10]).toFixed(2); 
+        rotation.yaw = Math.atan2(-matrix[2], matrix[0]);   
+        rotation.pitch = Math.atan2(-matrix[6], matrix[10]); 
         
-        rotationText = `Yaw (Turn): ${yaw} | Pitch (Nod): ${pitch}`;
+        rotationText = `Yaw (Turn): ${rotation.yaw.toFixed(2)} | Pitch (Nod): ${rotation.pitch.toFixed(2)}`;
     }
 
     dataOutput.innerText = `
@@ -101,8 +116,21 @@ Mouth Open (Jaw): ${jawOpen.toFixed(2)}
 Left Eye Blink : ${eyeBlinkLeft.toFixed(2)}
 Right Eye Blink: ${eyeBlinkRight.toFixed(2)}
     `;
+
+    // 🔥 STREAM DATA LIVE OVER THE NETWORK TO THE LAPTOP
+    faceChannel.send({
+      type: 'broadcast',
+      event: 'face-move',
+      payload: {
+        rotation: rotation,
+        expressions: {
+          jawOpen: jawOpen,
+          eyeBlinkLeft: eyeBlinkLeft,
+          eyeBlinkRight: eyeBlinkRight
+        }
+      }
+    });
 }
 
-// Kick off initialization sequence
 initializeFaceTracker();
 startButton.addEventListener("click", startCamera);
