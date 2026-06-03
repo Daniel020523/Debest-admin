@@ -1,4 +1,7 @@
-import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm/vision_bundle.js";
+// Universal dynamic import for MediaPipe to prevent browser blocking
+const vision = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm/vision_bundle.js");
+const FilesetResolver = vision.FilesetResolver;
+const FaceLandmarker = vision.FaceLandmarker;
 
 const video = document.getElementById("webcam");
 const startButton = document.getElementById("startButton");
@@ -8,32 +11,35 @@ let faceLandmarker;
 let runningMode = "VIDEO";
 let lastVideoTime = -1;
 
-// 1. Initialize the MediaPipe AI Model
+// Initialize the MediaPipe AI Model
 async function initializeFaceTracker() {
-    dataOutput.innerText = "Loading AI Models... Please wait.";
-    
-    // Fetch the fileset required for the vision tasks
-    const filesetResolver = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm"
-    );
-    
-    // Configure and load the Face Landmarker model
-    faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
-        baseOptions: {
-            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
-            delegate: "GPU" // Uses phone hardware acceleration for speed
-        },
-        outputFaceBlendshapes: true, // Crucial for eye/mouth tracking
-        outputTransformationMatrixes: true, // Crucial for 3D head rotation
-        runningMode: runningMode,
-        numFaces: 1
-    });
-    
-    dataOutput.innerText = "AI Models Loaded! You can now start your camera.";
-    startButton.style.display = "block";
+    try {
+        dataOutput.innerText = "Loading AI Models... Please wait.";
+        
+        const filesetResolver = await FilesetResolver.forVisionTasks(
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm"
+        );
+        
+        faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
+            baseOptions: {
+                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+                delegate: "GPU"
+            },
+            outputFaceBlendshapes: true,
+            outputTransformationMatrixes: true,
+            runningMode: runningMode,
+            numFaces: 1
+        });
+        
+        dataOutput.innerText = "AI Models Loaded! You can now start your camera.";
+        startButton.style.display = "block";
+    } catch (error) {
+        console.error(error);
+        dataOutput.innerText = "Error loading models. Check internet connection or console.";
+    }
 }
 
-// 2. Activate Phone Camera
+// Activate Phone Camera
 async function startCamera() {
     const constraints = {
         video: { facingMode: "user", width: 640, height: 480 }
@@ -50,7 +56,7 @@ async function startCamera() {
     }
 }
 
-// 3. The Core Tracking Loop (Runs continuously)
+// Tracking Loop
 async function predictWebcam() {
     let startTimeMs = performance.now();
     
@@ -60,7 +66,6 @@ async function predictWebcam() {
         if (faceLandmarker) {
             const results = faceLandmarker.detectForVideo(video, startTimeMs);
             
-            // If a face is found, parse and display the math data
             if (results.faceBlendshapes && results.faceBlendshapes.length > 0) {
                 displayTrackingMetrics(results);
             } else {
@@ -68,32 +73,26 @@ async function predictWebcam() {
             }
         }
     }
-    
-    // Keep looping smoothly at the device's native frame rate
     requestAnimationFrame(predictWebcam);
 }
 
-// 4. Extract and format the specific numbers we need
+// Parse coordinates
 function displayTrackingMetrics(results) {
     const blendshapes = results.faceBlendshapes[0].categories;
     
-    // Find the specific facial movements we want to monitor
     const jawOpen = blendshapes.find(shape => shape.categoryName === "jawOpen")?.score || 0;
     const eyeBlinkLeft = blendshapes.find(shape => shape.categoryName === "eyeBlinkLeft")?.score || 0;
     const eyeBlinkRight = blendshapes.find(shape => shape.categoryName === "eyeBlinkRight")?.score || 0;
     
-    // Grab the 3D Transformation Matrix to deduce head rotation angles
     let rotationText = "Calculating angle...";
     if (results.facialTransformationMatrixes && results.facialTransformationMatrixes.length > 0) {
         const matrix = results.facialTransformationMatrixes[0].data;
-        // Simple extraction of tilt/turn values from the matrix geometry
-        const yaw = Math.atan2(-matrix[2], matrix[0]).toFixed(2);   // Side-to-side turn
-        const pitch = Math.atan2(-matrix[6], matrix[10]).toFixed(2); // Up-and-down nod
+        const yaw = Math.atan2(-matrix[2], matrix[0]).toFixed(2);   
+        const pitch = Math.atan2(-matrix[6], matrix[10]).toFixed(2); 
         
         rotationText = `Yaw (Turn): ${yaw} | Pitch (Nod): ${pitch}`;
     }
 
-    // Print the raw values to the screen so we can confirm it works
     dataOutput.innerText = `
 [ HEAD POSITION ]
 ${rotationText}
@@ -105,6 +104,5 @@ Right Eye Blink: ${eyeBlinkRight.toFixed(2)}
     `;
 }
 
-// Initialize on page load
 initializeFaceTracker();
 startButton.addEventListener("click", startCamera);
