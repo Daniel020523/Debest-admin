@@ -8,464 +8,426 @@
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Syne+Mono&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
   body{
-    background:#060a12;
-    color:#e2e8f0;
+    background:#060a12;color:#e2e8f0;
     font-family:'Syne Mono',monospace;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:24px 16px;
-    overflow-x:hidden;
+    min-height:100vh;display:flex;flex-direction:column;
+    align-items:center;padding:20px 12px;
   }
   h1{
     font-family:'Orbitron',sans-serif;
-    font-size:clamp(18px,3vw,28px);
-    color:#00f5ff;
-    text-shadow:0 0 20px #00f5ff88;
-    margin-bottom:4px;
-    letter-spacing:3px;
+    font-size:clamp(16px,3vw,26px);
+    color:#00f5ff;text-shadow:0 0 20px #00f5ff88;
+    margin-bottom:4px;letter-spacing:3px;
   }
-  #status{
-    font-size:12px;
-    color:#64748b;
-    margin-bottom:18px;
-    letter-spacing:1px;
-  }
+  #status{font-size:12px;color:#64748b;margin-bottom:14px;letter-spacing:1px}
   #error-msg{
-    color:#f87171;font-size:12px;
-    margin-bottom:10px;display:none;
-    background:#1e0a0a;padding:8px 14px;border-radius:6px;
-    border:1px solid #f8717155;
+    color:#f87171;font-size:12px;margin-bottom:10px;display:none;
+    background:#1e0a0a;padding:8px 14px;border-radius:6px;border:1px solid #f8717155;
   }
-  .dashboard{
-    display:flex;flex-wrap:wrap;
-    gap:18px;max-width:1040px;width:100%;
-    justify-content:center;
-  }
-  .panel{
-    background:#0d1526;
-    border:1px solid #1e3a5f;
-    border-radius:14px;
-    padding:18px;
-    box-shadow:0 0 30px #00f5ff11;
-  }
-  .panel-title{
-    font-family:'Orbitron',sans-serif;
-    font-size:11px;color:#00f5ff;
-    letter-spacing:2px;margin-bottom:12px;
-    text-transform:uppercase;
-  }
+  .dashboard{display:flex;flex-wrap:wrap;gap:16px;max-width:1000px;width:100%;justify-content:center}
+  .panel{background:#0d1526;border:1px solid #1e3a5f;border-radius:14px;padding:16px;box-shadow:0 0 30px #00f5ff0d}
+  .panel-title{font-family:'Orbitron',sans-serif;font-size:10px;color:#00f5ff;letter-spacing:2px;margin-bottom:10px;text-transform:uppercase}
 
-  /* ── 3D viewport ── */
-  #threejs-wrap{
-    width:420px;height:420px;
-    border-radius:12px;overflow:hidden;
-    position:relative;background:#000;
-  }
+  #threejs-wrap{width:420px;height:420px;border-radius:10px;overflow:hidden;background:#000;position:relative}
   #threejs-wrap canvas{display:block}
 
-  /* ── upload ── */
-  .upload-row{
-    display:flex;align-items:center;gap:10px;
-    margin-bottom:14px;flex-wrap:wrap;
-  }
-  .upload-row label{font-size:12px;color:#94a3b8}
-  .upload-row input[type=file]{
-    font-size:11px;color:#cbd5e1;
-    background:#1e293b;border:1px solid #334155;
-    border-radius:6px;padding:4px 8px;cursor:pointer;
-  }
+  .upload-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .upload-row label{font-size:11px;color:#94a3b8}
+  .upload-row input[type=file]{font-size:11px;color:#cbd5e1;background:#1e293b;border:1px solid #334155;border-radius:6px;padding:4px 8px;cursor:pointer}
 
-  /* ── data feed ── */
-  #stream-log{
-    font-size:11px;color:#34d399;
-    background:#060a12;padding:12px;
-    border-radius:8px;
-    max-height:380px;overflow-y:auto;
-    white-space:pre;min-width:220px;
-    border:1px solid #0f2a1a;
-    line-height:1.7;
-  }
-
-  /* ── debug 2D canvas (hidden, used as texture source) ── */
-  #faceCanvas{display:none}
-
-  /* ── expression bars ── */
-  .bars{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .bars{display:flex;flex-direction:column;gap:5px;margin-top:10px}
   .bar-row{display:flex;align-items:center;gap:8px}
-  .bar-label{font-size:10px;color:#64748b;width:80px;flex-shrink:0}
-  .bar-track{flex:1;height:6px;background:#1e293b;border-radius:3px;overflow:hidden}
-  .bar-fill{height:100%;border-radius:3px;transition:width 0.05s;background:#00f5ff}
-  .bar-fill.jaw{background:#f59e0b}
-  .bar-fill.smile{background:#34d399}
-  .bar-fill.frown{background:#f87171}
+  .bar-label{font-size:10px;color:#64748b;width:76px;flex-shrink:0}
+  .bar-track{flex:1;height:5px;background:#1e293b;border-radius:3px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:3px;transition:width 0.05s;background:#00f5ff;width:0%}
+  .bar-fill.jaw{background:#f59e0b}.bar-fill.smile{background:#34d399}
 
-  @media(max-width:500px){
-    #threejs-wrap{width:340px;height:340px}
-  }
+  #stream-log{font-size:10px;color:#34d399;background:#060a12;padding:10px;border-radius:8px;
+    max-height:360px;overflow-y:auto;white-space:pre;min-width:200px;border:1px solid #0f2a1a;line-height:1.7}
+
+  #faceCanvas{display:none}
+  @media(max-width:480px){#threejs-wrap{width:340px;height:340px}}
 </style>
 </head>
 <body>
-
 <h1>◈ FACE PUPPETEER 3D</h1>
 <div id="status">Initialising…</div>
 <div id="error-msg"></div>
 
 <div class="dashboard">
-
-  <!-- LEFT: 3D viewer -->
   <div class="panel" style="padding:14px">
     <div class="upload-row">
       <label>FACE IMAGE →</label>
       <input type="file" id="imageLoader" accept="image/*">
     </div>
     <div id="threejs-wrap"></div>
-
-    <!-- expression bars -->
-    <div class="bars" style="margin-top:14px;width:420px">
-      <div class="bar-row"><span class="bar-label">JAW OPEN</span><div class="bar-track"><div class="bar-fill jaw" id="b-jaw" style="width:0%"></div></div></div>
-      <div class="bar-row"><span class="bar-label">BLINK L</span><div class="bar-track"><div class="bar-fill" id="b-bl" style="width:0%"></div></div></div>
-      <div class="bar-row"><span class="bar-label">BLINK R</span><div class="bar-track"><div class="bar-fill" id="b-br" style="width:0%"></div></div></div>
-      <div class="bar-row"><span class="bar-label">SMILE</span><div class="bar-track"><div class="bar-fill smile" id="b-smile" style="width:0%"></div></div></div>
+    <div class="bars" style="margin-top:12px;width:420px">
+      <div class="bar-row"><span class="bar-label">JAW OPEN</span><div class="bar-track"><div class="bar-fill jaw" id="b-jaw"></div></div></div>
+      <div class="bar-row"><span class="bar-label">BLINK L</span><div class="bar-track"><div class="bar-fill" id="b-bl"></div></div></div>
+      <div class="bar-row"><span class="bar-label">BLINK R</span><div class="bar-track"><div class="bar-fill" id="b-br"></div></div></div>
+      <div class="bar-row"><span class="bar-label">SMILE</span><div class="bar-track"><div class="bar-fill smile" id="b-smile"></div></div></div>
     </div>
   </div>
-
-  <!-- RIGHT: data feed -->
-  <div class="panel" style="flex:1;min-width:220px">
+  <div class="panel" style="flex:1;min-width:200px">
     <div class="panel-title">⬡ Live Feed</div>
     <pre id="stream-log">Waiting for tracking…</pre>
   </div>
-
 </div>
 
-<!-- hidden canvas for building face texture layers -->
+<!-- Hidden canvas for texture painting -->
 <canvas id="faceCanvas" width="512" height="512"></canvas>
 
-<!-- Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-// ════════════════════════════════════════════════════════════
-// CONFIG
-// ════════════════════════════════════════════════════════════
 const SUPABASE_URL      = "https://dmavecishluzeqdddaqy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_aTPFO65SpkKXmku2Nm7XGQ_tgRcXpFg"; // replace with real eyJ... key
+const SUPABASE_ANON_KEY = "sb_publishable_aTPFO65SpkKXmku2Nm7XGQ_tgRcXpFg";
 
-// ════════════════════════════════════════════════════════════
-// DOM
-// ════════════════════════════════════════════════════════════
+// ── DOM ───────────────────────────────────────────────────────────────────────
 const statusDiv   = document.getElementById("status");
-const errorMsg    = document.getElementById("error-msg");
+const errorDiv    = document.getElementById("error-msg");
 const streamLog   = document.getElementById("stream-log");
 const imageLoader = document.getElementById("imageLoader");
 const faceCanvas  = document.getElementById("faceCanvas");
 const faceCtx     = faceCanvas.getContext("2d");
+const bJaw=document.getElementById("b-jaw"), bBL=document.getElementById("b-bl");
+const bBR=document.getElementById("b-br"),   bSmile=document.getElementById("b-smile");
 
-const bJaw   = document.getElementById("b-jaw");
-const bBL    = document.getElementById("b-bl");
-const bBR    = document.getElementById("b-br");
-const bSmile = document.getElementById("b-smile");
+function showError(m){errorDiv.textContent="⚠ "+m;errorDiv.style.display="block";}
+function clamp01(v){return Math.max(0,Math.min(1,v));}
 
-function showError(m){ errorMsg.textContent="⚠ "+m; errorMsg.style.display="block"; }
-
-// ════════════════════════════════════════════════════════════
-// FACE IMAGE
-// ════════════════════════════════════════════════════════════
+// ── Face image ────────────────────────────────────────────────────────────────
 const faceImg = new Image();
 faceImg.crossOrigin = "anonymous";
-faceImg.onload  = () => { buildBaseTexture(); };
-faceImg.onerror = () => showError("Image load failed — please upload one manually.");
+let skinColor = "rgb(200,160,130)";
+let faceReady = false;
+
+faceImg.onload = () => {
+  faceReady = true;
+  faceCtx.clearRect(0,0,512,512);
+  faceCtx.drawImage(faceImg,0,0,512,512);
+  sampleSkin();
+  paintExpressions(0,0,0,0,0,0,0);
+  if(faceTexture) faceTexture.needsUpdate=true;
+};
+faceImg.onerror = () => showError("Image failed — upload one below.");
 faceImg.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=512&h=512&q=80";
 
 imageLoader.addEventListener("change", e => {
-  const f = e.target.files[0]; if(!f) return;
-  const r = new FileReader();
-  r.onload = ev => { faceImg.onload=()=>buildBaseTexture(); faceImg.src=ev.target.result; };
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{ faceImg.src=ev.target.result; };
   r.readAsDataURL(f);
 });
 
-// Draw base face to hidden canvas (512×512)
-function buildBaseTexture() {
-  faceCtx.clearRect(0,0,512,512);
-  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
-  if(faceTexture) faceTexture.needsUpdate = true;
-  // Sample average skin tone for eye/mouth fill
-  sampleSkinTone();
-  resetExpressions();
-  renderFaceTexture(0, 0, 0, 0, 0, 0, 0);
-}
-
-// ── Skin tone sampler (cheek area ~35% from top, sides) ──────────────────────
-let skinColor = "rgb(200,160,130)"; // fallback
-function sampleSkinTone() {
-  try {
-    const d = faceCtx.getImageData(80, 180, 20, 20).data;
+function sampleSkin(){
+  try{
+    const d=faceCtx.getImageData(70,200,30,30).data;
     let r=0,g=0,b=0;
     for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];}
-    const n = d.length/4;
-    skinColor = `rgb(${Math.round(r/n)},${Math.round(g/n)},${Math.round(b/n)})`;
-  } catch(e){}
+    const n=d.length/4;
+    skinColor=`rgb(${~~(r/n)},${~~(g/n)},${~~(b/n)})`;
+  }catch(e){}
 }
 
-// ════════════════════════════════════════════════════════════
-// THREE.JS SETUP — real 3D head mesh
-// ════════════════════════════════════════════════════════════
-const wrap     = document.getElementById("threejs-wrap");
-const W = wrap.offsetWidth, H = wrap.offsetHeight;
+// ── Three.js — displacement-mapped PLANE (not sphere!) ───────────────────────
+// A high-resolution plane with a Gaussian depth profile baked as displacementMap
+// makes the face look 3D without distorting the image.
+const wrap = document.getElementById("threejs-wrap");
+const W=wrap.offsetWidth, H=wrap.offsetHeight;
 
-const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-renderer.setSize(W, H);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({antialias:true,alpha:false});
+renderer.setSize(W,H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setClearColor(0x060a12,1);
 wrap.appendChild(renderer.domElement);
 
 const scene  = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
-camera.position.set(0, 0, 2.8);
+const camera = new THREE.PerspectiveCamera(38, W/H, 0.01, 100);
+camera.position.set(0,0,2.6);
 
-// Ambient + directional lights for natural shading
-const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-scene.add(ambient);
-const keyLight = new THREE.DirectionalLight(0xffeedd, 1.0);
-keyLight.position.set(1.5, 2, 2);
-scene.add(keyLight);
-const fillLight = new THREE.DirectionalLight(0xaaddff, 0.4);
-fillLight.position.set(-2, 0, 1);
-scene.add(fillLight);
+// Lighting — front key + subtle rim
+scene.add(new THREE.AmbientLight(0xffffff,0.55));
+const key=new THREE.DirectionalLight(0xfff5ee,0.9);
+key.position.set(0.8,1.2,2); scene.add(key);
+const rim=new THREE.DirectionalLight(0x88ccff,0.35);
+rim.position.set(-2,0.5,0.5); scene.add(rim);
 
-// Face texture from the hidden canvas
+// ── Face texture (from hidden canvas) ────────────────────────────────────────
 const faceTexture = new THREE.CanvasTexture(faceCanvas);
 faceTexture.minFilter = THREE.LinearFilter;
 
-// ── Head mesh: ellipsoid (SphereGeometry scaled) ─────────────────────────────
-// widthSegments & heightSegments kept high for smooth shading
-const headGeo = new THREE.SphereGeometry(1, 64, 64);
-// Scale to head-like proportions: slightly taller, slightly shallower depth
-const headMat = new THREE.MeshStandardMaterial({
+// ── Depth map — procedural Gaussian face profile ──────────────────────────────
+// Creates a depth map that is bright (high) in the centre-nose area and
+// darker toward the edges — giving the plane a natural face-like bulge.
+const DM_SIZE = 256;
+const dmCanvas = document.createElement("canvas");
+dmCanvas.width = dmCanvas.height = DM_SIZE;
+const dmCtx = dmCanvas.getContext("2d");
+
+function buildDepthMap(){
+  const id = dmCtx.createImageData(DM_SIZE,DM_SIZE);
+  const cx=DM_SIZE/2, cy=DM_SIZE*0.48;
+  // Nose bridge peak
+  const noseCX=DM_SIZE*0.5, noseCY=DM_SIZE*0.44;
+  for(let y=0;y<DM_SIZE;y++){
+    for(let x=0;x<DM_SIZE;x++){
+      const dx=(x-cx)/cx, dy=(y-cy)/(DM_SIZE*0.52);
+      // Outer face ellipse falloff
+      const rFace = Math.sqrt(dx*dx*1.1 + dy*dy);
+      const faceBulge = Math.max(0, 1 - rFace*rFace*1.4);
+      // Nose bump (smaller, offset up slightly)
+      const ndx=(x-noseCX)/(DM_SIZE*0.14), ndy=(y-noseCY)/(DM_SIZE*0.18);
+      const noseBump = Math.max(0, 1 - (ndx*ndx+ndy*ndy))*0.35;
+      // Cheekbones slight ridge
+      const lcx=(x-DM_SIZE*0.3)/(DM_SIZE*0.18), lcy=(y-DM_SIZE*0.52)/(DM_SIZE*0.12);
+      const rcx=(x-DM_SIZE*0.7)/(DM_SIZE*0.18), rcy=(y-DM_SIZE*0.52)/(DM_SIZE*0.12);
+      const cheeks=(Math.max(0,1-(lcx*lcx+lcy*lcy))+Math.max(0,1-(rcx*rcx+rcy*rcy)))*0.12;
+      // Eye socket slight indent
+      const lex=(x-DM_SIZE*0.35)/(DM_SIZE*0.09), ley=(y-DM_SIZE*0.40)/(DM_SIZE*0.065);
+      const rex=(x-DM_SIZE*0.65)/(DM_SIZE*0.09), rey=(y-DM_SIZE*0.40)/(DM_SIZE*0.065);
+      const eyeIndent=(Math.max(0,1-(lex*lex+ley*ley))+Math.max(0,1-(rex*rex+rey*rey)))*0.08;
+
+      let v = Math.max(0, Math.min(1, faceBulge + noseBump + cheeks - eyeIndent));
+      v = Math.pow(v, 0.7); // gamma — soften dark edges
+      const byte = ~~(v*255);
+      const i=(y*DM_SIZE+x)*4;
+      id.data[i]=id.data[i+1]=id.data[i+2]=byte;
+      id.data[i+3]=255;
+    }
+  }
+  dmCtx.putImageData(id,0,0);
+}
+buildDepthMap();
+
+const depthTexture = new THREE.CanvasTexture(dmCanvas);
+depthTexture.minFilter = THREE.LinearFilter;
+
+// ── Plane geometry — high segment count for smooth displacement ───────────────
+// 120×120 segments = smooth enough for face curves
+const planeGeo = new THREE.PlaneGeometry(2, 2, 120, 120);
+
+const planeMat = new THREE.MeshStandardMaterial({
   map: faceTexture,
-  roughness: 0.75,
-  metalness: 0.05,
+  displacementMap: depthTexture,
+  displacementScale: 0.52,   // how much the face "pops out"
+  displacementBias: -0.18,   // push the plane back so centre sits at z≈0
+  roughness: 0.82,
+  metalness: 0.0,
+  side: THREE.FrontSide,
 });
-const headMesh = new THREE.Mesh(headGeo, headMat);
-headMesh.scale.set(1, 1.15, 0.82); // x, y (taller), z (shallower = less ball-like)
-scene.add(headMesh);
 
-// ── Background subtle glow ────────────────────────────────────────────────────
-scene.background = new THREE.Color(0x060a12);
-scene.fog = new THREE.Fog(0x060a12, 6, 14);
+const faceMesh = new THREE.Mesh(planeGeo, planeMat);
+scene.add(faceMesh);
 
-// ── Render loop ────────────────────────────────────────────────────────────────
-let targetRotY = 0, targetRotX = 0, targetRotZ = 0;
-let curRotY = 0, curRotX = 0, curRotZ = 0;
-const LERP = 0.12; // smoothing factor
+// ── Smooth rotation lerp ───────────────────────────────────────────────────────
+let tRotY=0,tRotX=0,tRotZ=0;
+let cRotY=0,cRotX=0,cRotZ=0;
+const LERP=0.10;
 
-function animate() {
+function animate(){
   requestAnimationFrame(animate);
-  // Smooth lerp to target rotation
-  curRotY += (targetRotY - curRotY) * LERP;
-  curRotX += (targetRotX - curRotX) * LERP;
-  curRotZ += (targetRotZ - curRotZ) * LERP;
-  headMesh.rotation.y = curRotY;
-  headMesh.rotation.x = curRotX;
-  headMesh.rotation.z = curRotZ;
-  renderer.render(scene, camera);
+  cRotY+=(tRotY-cRotY)*LERP;
+  cRotX+=(tRotX-cRotX)*LERP;
+  cRotZ+=(tRotZ-cRotZ)*LERP;
+  faceMesh.rotation.y=cRotY;
+  faceMesh.rotation.x=cRotX;
+  faceMesh.rotation.z=cRotZ;
+  faceTexture.needsUpdate=true;
+  renderer.render(scene,camera);
 }
 animate();
 
-// ════════════════════════════════════════════════════════════
-// FACE TEXTURE PAINTER
-// Paints expression layers on top of base image on faceCanvas
-// ════════════════════════════════════════════════════════════
+// ── Expression painter on hidden canvas ───────────────────────────────────────
+function paintExpressions(jaw, bL, bR, smL, smR, frL, frR){
+  if(!faceReady) return;
 
-// Store last known values so we can repaint on image reload too
-let lastExpr = { jaw:0, bL:0, bR:0, smL:0, smR:0, frL:0, frR:0 };
+  // 1. Repaint clean base
+  faceCtx.clearRect(0,0,512,512);
+  faceCtx.drawImage(faceImg,0,0,512,512);
 
-function resetExpressions() {
-  lastExpr = { jaw:0, bL:0, bR:0, smL:0, smR:0, frL:0, frR:0 };
+  // 2. Eyes blink — skin-tone lid slides down, no black gap
+  paintEyelid(156, 196, 64, 27, bL);
+  paintEyelid(356, 196, 64, 27, bR);
+
+  // 3. Mouth open — reveal dark cavity + teeth, re-draw lips on top
+  paintMouth(256, 368, 76, jaw, (smL+smR)/2, (frL+frR)/2);
 }
 
-function renderFaceTexture(jaw, bL, bR, smL, smR, frL, frR) {
-  lastExpr = { jaw, bL, bR, smL, smR, frL, frR };
-
-  // 1. Repaint base image
-  faceCtx.clearRect(0, 0, 512, 512);
-  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
-
-  // ── Eye blink (FIX #3) ─────────────────────────────────────────────────────
-  // Instead of slicing and revealing black gaps, draw a filled ellipse that
-  // matches the skin tone, covering the eye area with the lid closing.
-  // Left eye centre approx: (155, 195), Right: (355, 195) on a 512×512 face.
-  // Eye region half-size: rx=60, ry=28
-
-  drawEyeLid(155, 195, 62, 28, bL);  // left eye
-  drawEyeLid(357, 195, 62, 28, bR);  // right eye
-
-  // ── Mouth / jaw open (FIX #2) ─────────────────────────────────────────────
-  // Approach: reveal a dark mouth interior by drawing an ellipse that grows
-  // with jawOpen, then overlay the lips from the source image on top.
-  // Mouth centre approx (256, 370), half-widths rx=70, ry=20→50
-  drawMouth(256, 368, 72, jaw);
-
-  // Tell Three.js the texture changed
-  faceTexture.needsUpdate = true;
-}
-
-// ── Eyelid painter ────────────────────────────────────────────────────────────
-function drawEyeLid(cx, cy, rx, ry, blink) {
-  if (blink < 0.05) return; // no visible blink, skip
+// ── Eyelid: clips to eye oval, repaints base, then draws skin lid ──────────────
+function paintEyelid(cx, cy, rx, ry, blink){
+  if(blink < 0.04) return;
+  const lidH = (ry*2.4) * blink;
 
   faceCtx.save();
-
-  // Sample skin color near the lid (just above the eye)
-  // We use the pre-sampled skinColor + slight darkening for the lid crease
+  // Clip to eye region
   faceCtx.beginPath();
-  faceCtx.ellipse(cx, cy, rx, ry * 1.1, 0, 0, Math.PI * 2);
-  faceCtx.clip(); // clip to eye region so lid doesn't bleed out
+  faceCtx.ellipse(cx,cy,rx+4,ry+4,0,0,Math.PI*2);
+  faceCtx.clip();
 
-  // Draw the base image again as backdrop (ensures no black gaps)
-  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
+  // Repaint base under clip (no black)
+  faceCtx.drawImage(faceImg,0,0,512,512);
 
-  // Lid: top-down fill using skin tone
-  // At blink=1 the lid covers the full eye; at blink=0 it's zero height
-  const lidH = ry * 2.2 * blink;
-  const grad = faceCtx.createLinearGradient(cx, cy - ry, cx, cy - ry + lidH);
+  // Draw skin lid sweeping down from top of eye
+  const topY = cy - ry;
+  const grad = faceCtx.createLinearGradient(cx, topY, cx, topY+lidH+4);
   grad.addColorStop(0,   skinColor);
-  grad.addColorStop(0.7, skinColor);
-  grad.addColorStop(1,   shadeColor(skinColor, -25)); // slight shadow at lash line
+  grad.addColorStop(0.75, skinColor);
+  grad.addColorStop(1,   shadeRGB(skinColor,-30));
 
   faceCtx.beginPath();
-  faceCtx.ellipse(cx, cy - ry + lidH * 0.5, rx * 0.95, lidH * 0.55, 0, 0, Math.PI * 2);
+  // Lid shape: upper half of ellipse expanding downward
+  faceCtx.ellipse(cx, topY + lidH*0.52, rx*0.96, Math.max(1,lidH*0.56), 0, 0, Math.PI*2);
   faceCtx.fillStyle = grad;
   faceCtx.fill();
 
+  // Lash line — thin dark stroke at bottom of lid
+  if(blink > 0.2){
+    faceCtx.beginPath();
+    faceCtx.ellipse(cx, topY+lidH, rx*0.90, 2.5, 0, 0, Math.PI);
+    faceCtx.strokeStyle = shadeRGB(skinColor,-80);
+    faceCtx.lineWidth = 2.5;
+    faceCtx.stroke();
+  }
   faceCtx.restore();
 }
 
-// ── Mouth painter ─────────────────────────────────────────────────────────────
-function drawMouth(cx, cy, rx, jaw) {
-  if (jaw < 0.03) return;
+// ── Mouth: cavity + teeth + re-draw lips on top ───────────────────────────────
+function paintMouth(cx, cy, rx, jaw, smile, frown){
+  if(jaw < 0.03) return;
 
-  const openH = Math.max(4, jaw * 58); // max open ~58px on 512 canvas
+  const openH = jaw * 62; // max ~62px vertical opening on 512 canvas
+  const halfH = openH * 0.5;
+
+  // Upper lip sits at cy - halfH, lower at cy + halfH
+  const upperLipY = cy - halfH;
+  const lowerLipY = cy + halfH;
 
   faceCtx.save();
 
-  // Clip to mouth oval region
+  // Clip region: mouth bounding oval
   faceCtx.beginPath();
-  faceCtx.ellipse(cx, cy, rx, 32, 0, 0, Math.PI * 2);
+  faceCtx.ellipse(cx, cy, rx, Math.max(18, halfH+16), 0, 0, Math.PI*2);
   faceCtx.clip();
 
-  // Dark mouth interior background
-  const interiorGrad = faceCtx.createRadialGradient(cx, cy, 2, cx, cy, rx * 0.9);
-  interiorGrad.addColorStop(0,   "#1a0a0a");
-  interiorGrad.addColorStop(0.6, "#2d1010");
-  interiorGrad.addColorStop(1,   "#3d1a1a");
-  faceCtx.fillStyle = interiorGrad;
-  faceCtx.fillRect(cx - rx, cy - 32, rx * 2, 64);
+  // --- Dark mouth interior ---
+  const cavGrad = faceCtx.createRadialGradient(cx,cy-4,2, cx,cy,rx*0.85);
+  cavGrad.addColorStop(0,   "#180808");
+  cavGrad.addColorStop(0.55,"#1f0d0d");
+  cavGrad.addColorStop(1,   "#2e1515");
+  faceCtx.fillStyle = cavGrad;
+  faceCtx.fillRect(cx-rx, cy-halfH-16, rx*2, openH+32);
 
-  // Teeth strip (upper) — white-ish bar that appears when jaw opens
-  if (jaw > 0.15) {
-    const teethH  = Math.min(openH * 0.55, 22);
-    const teethY  = cy - openH * 0.28;
-    const tGrad   = faceCtx.createLinearGradient(0, teethY, 0, teethY + teethH);
-    tGrad.addColorStop(0,   "#f0ece4");
-    tGrad.addColorStop(1,   "#c8c0b0");
+  // --- Upper teeth ---
+  if(jaw > 0.12){
+    const tH = Math.min(halfH*0.55, 20);
+    const tGrad = faceCtx.createLinearGradient(0, upperLipY+4, 0, upperLipY+4+tH);
+    tGrad.addColorStop(0,  "#f0ece6");
+    tGrad.addColorStop(1,  "#c8c4bc");
     faceCtx.beginPath();
-    faceCtx.ellipse(cx, teethY + teethH*0.5, rx * 0.72, teethH * 0.6, 0, 0, Math.PI*2);
+    faceCtx.ellipse(cx, upperLipY+4+tH*0.4, rx*0.70, tH*0.55, 0, 0, Math.PI*2);
     faceCtx.fillStyle = tGrad;
     faceCtx.fill();
+    // Tooth dividers
+    faceCtx.strokeStyle = "#b0aca4";
+    faceCtx.lineWidth = 1;
+    for(let i=-2;i<=2;i++){
+      const tx = cx + i*(rx*0.70/2.5);
+      faceCtx.beginPath();
+      faceCtx.moveTo(tx, upperLipY+4);
+      faceCtx.lineTo(tx, upperLipY+4+tH*0.9);
+      faceCtx.stroke();
+    }
 
-    // Lower teeth
-    const lTeethY = cy + openH * 0.1;
+    // --- Lower teeth ---
+    const ltH = tH*0.75;
     faceCtx.beginPath();
-    faceCtx.ellipse(cx, lTeethY + teethH*0.3, rx * 0.60, teethH * 0.45, 0, 0, Math.PI*2);
-    faceCtx.fillStyle = "#d8d0c0";
+    faceCtx.ellipse(cx, lowerLipY-4-ltH*0.4, rx*0.60, ltH*0.5, 0, 0, Math.PI*2);
+    faceCtx.fillStyle = "#dedad2";
     faceCtx.fill();
   }
 
   faceCtx.restore();
 
-  // ── Re-draw lip edges from source image on top (preserves lip shape) ────────
-  // Upper lip strip
+  // --- Re-draw upper lip from source (preserves real lip colour/shape) ---
   faceCtx.save();
   faceCtx.beginPath();
-  faceCtx.ellipse(cx, cy - openH * 0.38, rx * 0.92, 13, 0, 0, Math.PI*2);
+  faceCtx.ellipse(cx, upperLipY, rx*0.95, 14, 0, 0, Math.PI*2);
   faceCtx.clip();
-  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
+  faceCtx.drawImage(faceImg,0,0,512,512);
   faceCtx.restore();
 
-  // Lower lip strip  
+  // --- Re-draw lower lip from source ---
   faceCtx.save();
   faceCtx.beginPath();
-  faceCtx.ellipse(cx, cy + openH * 0.38 + 10, rx * 0.88, 14, 0, 0, Math.PI*2);
+  faceCtx.ellipse(cx, lowerLipY+6, rx*0.90, 15, 0, 0, Math.PI*2);
   faceCtx.clip();
-  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
+  faceCtx.drawImage(faceImg,0,0,512,512);
   faceCtx.restore();
+
+  // --- Corner smile/frown shifts ---
+  if(smile > 0.2){
+    const lift = smile * 10;
+    // repaint corner areas shifted up
+    [cx-rx*0.85, cx+rx*0.85].forEach(cornerX => {
+      faceCtx.save();
+      faceCtx.beginPath();
+      faceCtx.ellipse(cornerX, cy-lift, 18, 14, 0, 0, Math.PI*2);
+      faceCtx.clip();
+      faceCtx.drawImage(faceImg, 0, lift, 512, 512, 0, 0, 512, 512);
+      faceCtx.restore();
+    });
+  }
 }
 
-// ── Utility: darken/lighten a rgb() string ─────────────────────────────────
-function shadeColor(rgb, amt) {
-  const m = rgb.match(/\d+/g).map(Number);
-  return `rgb(${clamp(m[0]+amt)},${clamp(m[1]+amt)},${clamp(m[2]+amt)})`;
-}
-function clamp(v){ return Math.max(0, Math.min(255, v)); }
-
-// ════════════════════════════════════════════════════════════
-// SUPABASE REALTIME
-// ════════════════════════════════════════════════════════════
-let supabaseClient;
-try {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} catch(e) {
-  showError("Supabase init failed: " + e.message);
+function shadeRGB(rgb, amt){
+  const m=rgb.match(/\d+/g).map(Number);
+  const c=v=>Math.max(0,Math.min(255,v+amt));
+  return `rgb(${c(m[0])},${c(m[1])},${c(m[2])})`;
 }
 
-if (supabaseClient) {
-  const ch = supabaseClient.channel("puppeteer-room-1");
+// ── Supabase realtime ─────────────────────────────────────────────────────────
+let sb;
+try{ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); }
+catch(e){ showError("Supabase init: "+e.message); }
 
-  ch.on("broadcast", { event: "face-move" }, ({ payload: d }) => {
+if(sb){
+  sb.channel("puppeteer-room-1")
+    .on("broadcast",{event:"face-move"},({payload:d})=>{
+      streamLog.innerText = JSON.stringify(d,null,2);
 
-    streamLog.innerText = JSON.stringify(d, null, 2);
+      // True 3D rotation on the displaced plane
+      // Clamp to ±70° so the face doesn't flip inside-out
+      tRotY = Math.max(-1.22, Math.min(1.22,  d.rotation.yaw   * 1.1));
+      tRotX = Math.max(-0.90, Math.min(0.90, -d.rotation.pitch * 0.95));
+      tRotZ = Math.max(-0.50, Math.min(0.50,  (d.rotation.roll||0)*0.65));
 
-    // ── FIX #1: TRUE 3D rotation via Three.js mesh ──────────────────────────
-    // Yaw → rotate around Y axis (left/right turn)
-    // Pitch → rotate around X axis (nod up/down), inverted for natural feel
-    // Roll → rotate around Z axis (head tilt)
-    targetRotY =  d.rotation.yaw   * 1.2;
-    targetRotX = -d.rotation.pitch * 1.0;
-    targetRotZ =  (d.rotation.roll || 0) * 0.7;
+      const jaw  = clamp01(d.expressions.jawOpen        ||0);
+      const bL   = clamp01(d.expressions.eyeBlinkLeft   ||0);
+      const bR   = clamp01(d.expressions.eyeBlinkRight  ||0);
+      const smL  = clamp01(d.expressions.mouthSmileLeft  ||0);
+      const smR  = clamp01(d.expressions.mouthSmileRight ||0);
+      const frL  = clamp01(d.expressions.mouthFrownLeft  ||0);
+      const frR  = clamp01(d.expressions.mouthFrownRight ||0);
 
-    const jaw  = clamp01(d.expressions.jawOpen        || 0);
-    const bL   = clamp01(d.expressions.eyeBlinkLeft   || 0);
-    const bR   = clamp01(d.expressions.eyeBlinkRight  || 0);
-    const smL  = clamp01(d.expressions.mouthSmileLeft  || 0);
-    const smR  = clamp01(d.expressions.mouthSmileRight || 0);
-    const frL  = clamp01(d.expressions.mouthFrownLeft  || 0);
-    const frR  = clamp01(d.expressions.mouthFrownRight || 0);
+      bJaw.style.width   = (jaw*100)+"%";
+      bBL.style.width    = (bL*100)+"%";
+      bBR.style.width    = (bR*100)+"%";
+      bSmile.style.width = (((smL+smR)/2)*100)+"%";
 
-    // Update expression bars
-    bJaw.style.width   = (jaw  * 100) + "%";
-    bBL.style.width    = (bL   * 100) + "%";
-    bBR.style.width    = (bR   * 100) + "%";
-    bSmile.style.width = (((smL+smR)/2) * 100) + "%";
-
-    // ── FIX #2 & #3: Repaint face texture with expressions ──────────────────
-    renderFaceTexture(jaw, bL, bR, smL, smR, frL, frR);
-
-  }).subscribe(status => {
-    if (status === "SUBSCRIBED") {
-      statusDiv.innerText = "🟢  Connected — waiting for face data…";
-      statusDiv.style.color = "#34d399";
-    } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-      showError(`Channel ${status} — check your ANON KEY`);
-      statusDiv.innerText = "🔴  Disconnected";
-      statusDiv.style.color = "#f87171";
-    }
-  });
+      paintExpressions(jaw,bL,bR,smL,smR,frL,frR);
+    })
+    .subscribe(s=>{
+      if(s==="SUBSCRIBED"){
+        statusDiv.innerText="🟢  Connected — waiting for face data…";
+        statusDiv.style.color="#34d399";
+      } else if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){
+        showError("Channel "+s+" — check ANON KEY");
+        statusDiv.innerText="🔴  Disconnected";
+        statusDiv.style.color="#f87171";
+      }
+    });
 }
-
-function clamp01(v){ return Math.max(0, Math.min(1, v)); }
 </script>
 </body>
 </html>
