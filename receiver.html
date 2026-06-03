@@ -1,259 +1,471 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Puppeteer Dashboard</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 { margin-bottom: 5px; color: #38bdf8; }
-        #status { color: #94a3b8; font-size: 14px; margin-bottom: 10px; }
-        #error-msg { color: #f87171; font-size: 13px; margin-bottom: 10px; display: none; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Face Puppeteer 3D</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Syne+Mono&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#060a12;
+    color:#e2e8f0;
+    font-family:'Syne Mono',monospace;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:24px 16px;
+    overflow-x:hidden;
+  }
+  h1{
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(18px,3vw,28px);
+    color:#00f5ff;
+    text-shadow:0 0 20px #00f5ff88;
+    margin-bottom:4px;
+    letter-spacing:3px;
+  }
+  #status{
+    font-size:12px;
+    color:#64748b;
+    margin-bottom:18px;
+    letter-spacing:1px;
+  }
+  #error-msg{
+    color:#f87171;font-size:12px;
+    margin-bottom:10px;display:none;
+    background:#1e0a0a;padding:8px 14px;border-radius:6px;
+    border:1px solid #f8717155;
+  }
+  .dashboard{
+    display:flex;flex-wrap:wrap;
+    gap:18px;max-width:1040px;width:100%;
+    justify-content:center;
+  }
+  .panel{
+    background:#0d1526;
+    border:1px solid #1e3a5f;
+    border-radius:14px;
+    padding:18px;
+    box-shadow:0 0 30px #00f5ff11;
+  }
+  .panel-title{
+    font-family:'Orbitron',sans-serif;
+    font-size:11px;color:#00f5ff;
+    letter-spacing:2px;margin-bottom:12px;
+    text-transform:uppercase;
+  }
 
-        .dashboard {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-width: 1000px;
-            width: 100%;
-        }
-        @media (min-width: 768px) {
-            .dashboard { flex-direction: row; }
-        }
+  /* ── 3D viewport ── */
+  #threejs-wrap{
+    width:420px;height:420px;
+    border-radius:12px;overflow:hidden;
+    position:relative;background:#000;
+  }
+  #threejs-wrap canvas{display:block}
 
-        .canvas-container {
-            flex: 1.5;
-            background-color: #1e293b;
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 450px;
-            border: 2px solid #334155;
-        }
+  /* ── upload ── */
+  .upload-row{
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:14px;flex-wrap:wrap;
+  }
+  .upload-row label{font-size:12px;color:#94a3b8}
+  .upload-row input[type=file]{
+    font-size:11px;color:#cbd5e1;
+    background:#1e293b;border:1px solid #334155;
+    border-radius:6px;padding:4px 8px;cursor:pointer;
+  }
 
-        .upload-panel {
-            margin-bottom: 15px;
-            background: #334155;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            width: 100%;
-            box-sizing: border-box;
-        }
+  /* ── data feed ── */
+  #stream-log{
+    font-size:11px;color:#34d399;
+    background:#060a12;padding:12px;
+    border-radius:8px;
+    max-height:380px;overflow-y:auto;
+    white-space:pre;min-width:220px;
+    border:1px solid #0f2a1a;
+    line-height:1.7;
+  }
 
-        /* FIX #6: perspective + preserve-3d must be on the WRAPPER, not the canvas.
-           The canvas itself gets the rotateY/rotateX transform applied. */
-        #canvas-wrapper {
-            perspective: 1000px;
-        }
+  /* ── debug 2D canvas (hidden, used as texture source) ── */
+  #faceCanvas{display:none}
 
-        #faceCanvas {
-            max-width: 100%;
-            height: auto;
-            background: #0f172a;
-            border-radius: 8px;
-            transition: transform 0.06s ease-out;
-            /* preserve-3d removed from here — it has no effect on a canvas element */
-        }
+  /* ── expression bars ── */
+  .bars{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .bar-row{display:flex;align-items:center;gap:8px}
+  .bar-label{font-size:10px;color:#64748b;width:80px;flex-shrink:0}
+  .bar-track{flex:1;height:6px;background:#1e293b;border-radius:3px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:3px;transition:width 0.05s;background:#00f5ff}
+  .bar-fill.jaw{background:#f59e0b}
+  .bar-fill.smile{background:#34d399}
+  .bar-fill.frown{background:#f87171}
 
-        .data-card {
-            flex: 1;
-            background-color: #1e293b;
-            border-radius: 12px;
-            padding: 20px;
-            border: 2px solid #334155;
-        }
-        h3 { margin-top: 0; color: #38bdf8; }
-        pre {
-            font-family: monospace;
-            font-size: 13px;
-            color: #34d399;
-            background: #0f172a;
-            padding: 12px;
-            border-radius: 6px;
-            overflow-x: auto;
-            max-height: 380px;
-            white-space: pre-wrap;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  @media(max-width:500px){
+    #threejs-wrap{width:340px;height:340px}
+  }
+</style>
 </head>
 <body>
 
-<h1>📸 Photo Puppeteer Dashboard</h1>
-<div id="status">Connecting to Supabase…</div>
+<h1>◈ FACE PUPPETEER 3D</h1>
+<div id="status">Initialising…</div>
 <div id="error-msg"></div>
 
 <div class="dashboard">
-    <div class="canvas-container">
-        <div class="upload-panel">
-            <label for="imageLoader"><b>Upload Face Image:</b></label>
-            <input type="file" id="imageLoader" accept="image/*">
-        </div>
-        <!-- FIX #6: wrapper carries perspective so canvas 3D rotation renders correctly -->
-        <div id="canvas-wrapper">
-            <canvas id="faceCanvas" width="400" height="400"></canvas>
-        </div>
-    </div>
 
-    <div class="data-card">
-        <h3>Incoming Feed</h3>
-        <pre id="stream-log">Waiting for phone tracking to start…</pre>
+  <!-- LEFT: 3D viewer -->
+  <div class="panel" style="padding:14px">
+    <div class="upload-row">
+      <label>FACE IMAGE →</label>
+      <input type="file" id="imageLoader" accept="image/*">
     </div>
+    <div id="threejs-wrap"></div>
+
+    <!-- expression bars -->
+    <div class="bars" style="margin-top:14px;width:420px">
+      <div class="bar-row"><span class="bar-label">JAW OPEN</span><div class="bar-track"><div class="bar-fill jaw" id="b-jaw" style="width:0%"></div></div></div>
+      <div class="bar-row"><span class="bar-label">BLINK L</span><div class="bar-track"><div class="bar-fill" id="b-bl" style="width:0%"></div></div></div>
+      <div class="bar-row"><span class="bar-label">BLINK R</span><div class="bar-track"><div class="bar-fill" id="b-br" style="width:0%"></div></div></div>
+      <div class="bar-row"><span class="bar-label">SMILE</span><div class="bar-track"><div class="bar-fill smile" id="b-smile" style="width:0%"></div></div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: data feed -->
+  <div class="panel" style="flex:1;min-width:220px">
+    <div class="panel-title">⬡ Live Feed</div>
+    <pre id="stream-log">Waiting for tracking…</pre>
+  </div>
+
 </div>
 
+<!-- hidden canvas for building face texture layers -->
+<canvas id="faceCanvas" width="512" height="512"></canvas>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-// ── Supabase credentials ──────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════════
 const SUPABASE_URL      = "https://dmavecishluzeqdddaqy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_aTPFO65SpkKXmku2Nm7XGQ_tgRcXpFg"; // ← replace with real eyJ... key
+const SUPABASE_ANON_KEY = "sb_publishable_aTPFO65SpkKXmku2Nm7XGQ_tgRcXpFg"; // replace with real eyJ... key
 
-// ── DOM refs ──────────────────────────────────────────────────────────────────
-const statusDiv  = document.getElementById("status");
-const errorMsg   = document.getElementById("error-msg");
-const streamLog  = document.getElementById("stream-log");
-const canvas     = document.getElementById("faceCanvas");
-const ctx        = canvas.getContext("2d");
+// ════════════════════════════════════════════════════════════
+// DOM
+// ════════════════════════════════════════════════════════════
+const statusDiv   = document.getElementById("status");
+const errorMsg    = document.getElementById("error-msg");
+const streamLog   = document.getElementById("stream-log");
 const imageLoader = document.getElementById("imageLoader");
+const faceCanvas  = document.getElementById("faceCanvas");
+const faceCtx     = faceCanvas.getContext("2d");
 
-function showError(msg) {
-    errorMsg.textContent  = "⚠️ " + msg;
-    errorMsg.style.display = "block";
-}
+const bJaw   = document.getElementById("b-jaw");
+const bBL    = document.getElementById("b-bl");
+const bBR    = document.getElementById("b-br");
+const bSmile = document.getElementById("b-smile");
 
-// ── Target image ──────────────────────────────────────────────────────────────
-const targetImage = new Image();
-targetImage.crossOrigin = "anonymous";
-targetImage.onload  = () => resetFace();
-targetImage.onerror = () => showError("Failed to load default image. Upload one manually.");
-// Attach onload BEFORE setting src
-targetImage.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=80";
+function showError(m){ errorMsg.textContent="⚠ "+m; errorMsg.style.display="block"; }
 
-imageLoader.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload  = (ev) => {
-        targetImage.onload  = () => resetFace();
-        targetImage.onerror = () => showError("Could not load selected image.");
-        targetImage.src = ev.target.result;
-    };
-    reader.onerror = () => showError("Could not read selected file.");
-    reader.readAsDataURL(file);
+// ════════════════════════════════════════════════════════════
+// FACE IMAGE
+// ════════════════════════════════════════════════════════════
+const faceImg = new Image();
+faceImg.crossOrigin = "anonymous";
+faceImg.onload  = () => { buildBaseTexture(); };
+faceImg.onerror = () => showError("Image load failed — please upload one manually.");
+faceImg.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=512&h=512&q=80";
+
+imageLoader.addEventListener("change", e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => { faceImg.onload=()=>buildBaseTexture(); faceImg.src=ev.target.result; };
+  r.readAsDataURL(f);
 });
 
-function resetFace() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(targetImage, 0, 0, canvas.width, canvas.height);
+// Draw base face to hidden canvas (512×512)
+function buildBaseTexture() {
+  faceCtx.clearRect(0,0,512,512);
+  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
+  if(faceTexture) faceTexture.needsUpdate = true;
+  // Sample average skin tone for eye/mouth fill
+  sampleSkinTone();
+  resetExpressions();
+  renderFaceTexture(0, 0, 0, 0, 0, 0, 0);
 }
 
-// ── Supabase realtime ─────────────────────────────────────────────────────────
+// ── Skin tone sampler (cheek area ~35% from top, sides) ──────────────────────
+let skinColor = "rgb(200,160,130)"; // fallback
+function sampleSkinTone() {
+  try {
+    const d = faceCtx.getImageData(80, 180, 20, 20).data;
+    let r=0,g=0,b=0;
+    for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];}
+    const n = d.length/4;
+    skinColor = `rgb(${Math.round(r/n)},${Math.round(g/n)},${Math.round(b/n)})`;
+  } catch(e){}
+}
+
+// ════════════════════════════════════════════════════════════
+// THREE.JS SETUP — real 3D head mesh
+// ════════════════════════════════════════════════════════════
+const wrap     = document.getElementById("threejs-wrap");
+const W = wrap.offsetWidth, H = wrap.offsetHeight;
+
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setSize(W, H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+wrap.appendChild(renderer.domElement);
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
+camera.position.set(0, 0, 2.8);
+
+// Ambient + directional lights for natural shading
+const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambient);
+const keyLight = new THREE.DirectionalLight(0xffeedd, 1.0);
+keyLight.position.set(1.5, 2, 2);
+scene.add(keyLight);
+const fillLight = new THREE.DirectionalLight(0xaaddff, 0.4);
+fillLight.position.set(-2, 0, 1);
+scene.add(fillLight);
+
+// Face texture from the hidden canvas
+const faceTexture = new THREE.CanvasTexture(faceCanvas);
+faceTexture.minFilter = THREE.LinearFilter;
+
+// ── Head mesh: ellipsoid (SphereGeometry scaled) ─────────────────────────────
+// widthSegments & heightSegments kept high for smooth shading
+const headGeo = new THREE.SphereGeometry(1, 64, 64);
+// Scale to head-like proportions: slightly taller, slightly shallower depth
+const headMat = new THREE.MeshStandardMaterial({
+  map: faceTexture,
+  roughness: 0.75,
+  metalness: 0.05,
+});
+const headMesh = new THREE.Mesh(headGeo, headMat);
+headMesh.scale.set(1, 1.15, 0.82); // x, y (taller), z (shallower = less ball-like)
+scene.add(headMesh);
+
+// ── Background subtle glow ────────────────────────────────────────────────────
+scene.background = new THREE.Color(0x060a12);
+scene.fog = new THREE.Fog(0x060a12, 6, 14);
+
+// ── Render loop ────────────────────────────────────────────────────────────────
+let targetRotY = 0, targetRotX = 0, targetRotZ = 0;
+let curRotY = 0, curRotX = 0, curRotZ = 0;
+const LERP = 0.12; // smoothing factor
+
+function animate() {
+  requestAnimationFrame(animate);
+  // Smooth lerp to target rotation
+  curRotY += (targetRotY - curRotY) * LERP;
+  curRotX += (targetRotX - curRotX) * LERP;
+  curRotZ += (targetRotZ - curRotZ) * LERP;
+  headMesh.rotation.y = curRotY;
+  headMesh.rotation.x = curRotX;
+  headMesh.rotation.z = curRotZ;
+  renderer.render(scene, camera);
+}
+animate();
+
+// ════════════════════════════════════════════════════════════
+// FACE TEXTURE PAINTER
+// Paints expression layers on top of base image on faceCanvas
+// ════════════════════════════════════════════════════════════
+
+// Store last known values so we can repaint on image reload too
+let lastExpr = { jaw:0, bL:0, bR:0, smL:0, smR:0, frL:0, frR:0 };
+
+function resetExpressions() {
+  lastExpr = { jaw:0, bL:0, bR:0, smL:0, smR:0, frL:0, frR:0 };
+}
+
+function renderFaceTexture(jaw, bL, bR, smL, smR, frL, frR) {
+  lastExpr = { jaw, bL, bR, smL, smR, frL, frR };
+
+  // 1. Repaint base image
+  faceCtx.clearRect(0, 0, 512, 512);
+  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
+
+  // ── Eye blink (FIX #3) ─────────────────────────────────────────────────────
+  // Instead of slicing and revealing black gaps, draw a filled ellipse that
+  // matches the skin tone, covering the eye area with the lid closing.
+  // Left eye centre approx: (155, 195), Right: (355, 195) on a 512×512 face.
+  // Eye region half-size: rx=60, ry=28
+
+  drawEyeLid(155, 195, 62, 28, bL);  // left eye
+  drawEyeLid(357, 195, 62, 28, bR);  // right eye
+
+  // ── Mouth / jaw open (FIX #2) ─────────────────────────────────────────────
+  // Approach: reveal a dark mouth interior by drawing an ellipse that grows
+  // with jawOpen, then overlay the lips from the source image on top.
+  // Mouth centre approx (256, 370), half-widths rx=70, ry=20→50
+  drawMouth(256, 368, 72, jaw);
+
+  // Tell Three.js the texture changed
+  faceTexture.needsUpdate = true;
+}
+
+// ── Eyelid painter ────────────────────────────────────────────────────────────
+function drawEyeLid(cx, cy, rx, ry, blink) {
+  if (blink < 0.05) return; // no visible blink, skip
+
+  faceCtx.save();
+
+  // Sample skin color near the lid (just above the eye)
+  // We use the pre-sampled skinColor + slight darkening for the lid crease
+  faceCtx.beginPath();
+  faceCtx.ellipse(cx, cy, rx, ry * 1.1, 0, 0, Math.PI * 2);
+  faceCtx.clip(); // clip to eye region so lid doesn't bleed out
+
+  // Draw the base image again as backdrop (ensures no black gaps)
+  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
+
+  // Lid: top-down fill using skin tone
+  // At blink=1 the lid covers the full eye; at blink=0 it's zero height
+  const lidH = ry * 2.2 * blink;
+  const grad = faceCtx.createLinearGradient(cx, cy - ry, cx, cy - ry + lidH);
+  grad.addColorStop(0,   skinColor);
+  grad.addColorStop(0.7, skinColor);
+  grad.addColorStop(1,   shadeColor(skinColor, -25)); // slight shadow at lash line
+
+  faceCtx.beginPath();
+  faceCtx.ellipse(cx, cy - ry + lidH * 0.5, rx * 0.95, lidH * 0.55, 0, 0, Math.PI * 2);
+  faceCtx.fillStyle = grad;
+  faceCtx.fill();
+
+  faceCtx.restore();
+}
+
+// ── Mouth painter ─────────────────────────────────────────────────────────────
+function drawMouth(cx, cy, rx, jaw) {
+  if (jaw < 0.03) return;
+
+  const openH = Math.max(4, jaw * 58); // max open ~58px on 512 canvas
+
+  faceCtx.save();
+
+  // Clip to mouth oval region
+  faceCtx.beginPath();
+  faceCtx.ellipse(cx, cy, rx, 32, 0, 0, Math.PI * 2);
+  faceCtx.clip();
+
+  // Dark mouth interior background
+  const interiorGrad = faceCtx.createRadialGradient(cx, cy, 2, cx, cy, rx * 0.9);
+  interiorGrad.addColorStop(0,   "#1a0a0a");
+  interiorGrad.addColorStop(0.6, "#2d1010");
+  interiorGrad.addColorStop(1,   "#3d1a1a");
+  faceCtx.fillStyle = interiorGrad;
+  faceCtx.fillRect(cx - rx, cy - 32, rx * 2, 64);
+
+  // Teeth strip (upper) — white-ish bar that appears when jaw opens
+  if (jaw > 0.15) {
+    const teethH  = Math.min(openH * 0.55, 22);
+    const teethY  = cy - openH * 0.28;
+    const tGrad   = faceCtx.createLinearGradient(0, teethY, 0, teethY + teethH);
+    tGrad.addColorStop(0,   "#f0ece4");
+    tGrad.addColorStop(1,   "#c8c0b0");
+    faceCtx.beginPath();
+    faceCtx.ellipse(cx, teethY + teethH*0.5, rx * 0.72, teethH * 0.6, 0, 0, Math.PI*2);
+    faceCtx.fillStyle = tGrad;
+    faceCtx.fill();
+
+    // Lower teeth
+    const lTeethY = cy + openH * 0.1;
+    faceCtx.beginPath();
+    faceCtx.ellipse(cx, lTeethY + teethH*0.3, rx * 0.60, teethH * 0.45, 0, 0, Math.PI*2);
+    faceCtx.fillStyle = "#d8d0c0";
+    faceCtx.fill();
+  }
+
+  faceCtx.restore();
+
+  // ── Re-draw lip edges from source image on top (preserves lip shape) ────────
+  // Upper lip strip
+  faceCtx.save();
+  faceCtx.beginPath();
+  faceCtx.ellipse(cx, cy - openH * 0.38, rx * 0.92, 13, 0, 0, Math.PI*2);
+  faceCtx.clip();
+  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
+  faceCtx.restore();
+
+  // Lower lip strip  
+  faceCtx.save();
+  faceCtx.beginPath();
+  faceCtx.ellipse(cx, cy + openH * 0.38 + 10, rx * 0.88, 14, 0, 0, Math.PI*2);
+  faceCtx.clip();
+  faceCtx.drawImage(faceImg, 0, 0, 512, 512);
+  faceCtx.restore();
+}
+
+// ── Utility: darken/lighten a rgb() string ─────────────────────────────────
+function shadeColor(rgb, amt) {
+  const m = rgb.match(/\d+/g).map(Number);
+  return `rgb(${clamp(m[0]+amt)},${clamp(m[1]+amt)},${clamp(m[2]+amt)})`;
+}
+function clamp(v){ return Math.max(0, Math.min(255, v)); }
+
+// ════════════════════════════════════════════════════════════
+// SUPABASE REALTIME
+// ════════════════════════════════════════════════════════════
 let supabaseClient;
 try {
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} catch (e) {
-    showError("Supabase init failed: " + e.message);
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch(e) {
+  showError("Supabase init failed: " + e.message);
 }
 
 if (supabaseClient) {
-    const faceChannel = supabaseClient.channel("puppeteer-room-1");
+  const ch = supabaseClient.channel("puppeteer-room-1");
 
-    faceChannel
-        .on("broadcast", { event: "face-move" }, ({ payload: data }) => {
-            streamLog.innerText = JSON.stringify(data, null, 2);
-            applyFacePuppet(data);
-        })
-        .subscribe((status) => {
-            if (status === "SUBSCRIBED") {
-                statusDiv.innerText    = "🟢 Connected! Waiting for tracking data…";
-                statusDiv.style.color  = "#34d399";
-            } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-                showError(`Channel error: ${status}. Check your ANON KEY.`);
-                statusDiv.innerText    = "🔴 Connection failed.";
-                statusDiv.style.color  = "#f87171";
-            }
-        });
+  ch.on("broadcast", { event: "face-move" }, ({ payload: d }) => {
+
+    streamLog.innerText = JSON.stringify(d, null, 2);
+
+    // ── FIX #1: TRUE 3D rotation via Three.js mesh ──────────────────────────
+    // Yaw → rotate around Y axis (left/right turn)
+    // Pitch → rotate around X axis (nod up/down), inverted for natural feel
+    // Roll → rotate around Z axis (head tilt)
+    targetRotY =  d.rotation.yaw   * 1.2;
+    targetRotX = -d.rotation.pitch * 1.0;
+    targetRotZ =  (d.rotation.roll || 0) * 0.7;
+
+    const jaw  = clamp01(d.expressions.jawOpen        || 0);
+    const bL   = clamp01(d.expressions.eyeBlinkLeft   || 0);
+    const bR   = clamp01(d.expressions.eyeBlinkRight  || 0);
+    const smL  = clamp01(d.expressions.mouthSmileLeft  || 0);
+    const smR  = clamp01(d.expressions.mouthSmileRight || 0);
+    const frL  = clamp01(d.expressions.mouthFrownLeft  || 0);
+    const frR  = clamp01(d.expressions.mouthFrownRight || 0);
+
+    // Update expression bars
+    bJaw.style.width   = (jaw  * 100) + "%";
+    bBL.style.width    = (bL   * 100) + "%";
+    bBR.style.width    = (bR   * 100) + "%";
+    bSmile.style.width = (((smL+smR)/2) * 100) + "%";
+
+    // ── FIX #2 & #3: Repaint face texture with expressions ──────────────────
+    renderFaceTexture(jaw, bL, bR, smL, smR, frL, frR);
+
+  }).subscribe(status => {
+    if (status === "SUBSCRIBED") {
+      statusDiv.innerText = "🟢  Connected — waiting for face data…";
+      statusDiv.style.color = "#34d399";
+    } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+      showError(`Channel ${status} — check your ANON KEY`);
+      statusDiv.innerText = "🔴  Disconnected";
+      statusDiv.style.color = "#f87171";
+    }
+  });
 }
 
-// ── Puppet rendering ──────────────────────────────────────────────────────────
-function applyFacePuppet(data) {
-    // 1. 3D head rotation via CSS transform on canvas
-    // FIX #6: canvas (not a parent with preserve-3d) receives transform;
-    // the #canvas-wrapper provides the perspective context.
-    const degYaw   = (data.rotation.yaw   * 180 / Math.PI) * 1.5;
-    const degPitch = (data.rotation.pitch * 180 / Math.PI) * 1.5;
-    const degRoll  = data.rotation.roll ? (data.rotation.roll * 180 / Math.PI) * 0.8 : 0;
-    canvas.style.transform = `rotateY(${degYaw}deg) rotateX(${-degPitch}deg) rotateZ(${degRoll}deg)`;
-
-    // 2. Expression values
-    const jaw    = Math.min(1, data.expressions.jawOpen        || 0);
-    const blinkL = Math.min(1, data.expressions.eyeBlinkLeft   || 0);
-    const blinkR = Math.min(1, data.expressions.eyeBlinkRight  || 0);
-    const smileL = data.expressions.mouthSmileLeft  || 0;
-    const smileR = data.expressions.mouthSmileRight || 0;
-    const frownL = data.expressions.mouthFrownLeft  || 0;
-    const frownR = data.expressions.mouthFrownRight || 0;
-
-    const avgSmile = (smileL + smileR) / 2;
-    const avgFrown = (frownL + frownR) / 2;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // ── Slice layout (contiguous, non-overlapping 400×400 image) ──────────────
-    // Zone       src-y   src-h   dest-y   dest-h
-    // Forehead    0      130       0       130    (static)
-    // Eyes       130      55     130        55    (squash per blink)
-    // Nose       185      55     185        55    (static)
-    // Mouth      240     100     240       100    (stretch per jaw + shift per expression)
-    // Chin       340      60    340+delta   60    (shifts down with jaw)
-
-    // Forehead / hair (static)
-    ctx.drawImage(targetImage, 0, 0, 400, 130,  0, 0, 400, 130);
-
-    // Left eye — squash vertically on blink
-    const hLE   = Math.max(3, 55 * (1 - blinkL * 0.9));
-    const yOffLE = 130 + (55 - hLE) / 2;
-    ctx.drawImage(targetImage, 0,   130, 160, 55,  0,   yOffLE, 160, hLE);
-
-    // Right eye — squash vertically on blink
-    const hRE   = Math.max(3, 55 * (1 - blinkR * 0.9));
-    const yOffRE = 130 + (55 - hRE) / 2;
-    ctx.drawImage(targetImage, 240, 130, 160, 55,  240, yOffRE, 160, hRE);
-
-    // Nose bridge (centre, unaffected by blink)
-    ctx.drawImage(targetImage, 160, 130, 80, 55,  160, 130, 80, 55);
-
-    // Cheeks / nose area (static)
-    ctx.drawImage(targetImage, 0, 185, 400, 55,  0, 185, 400, 55);
-
-    // Mouth region — stretch down with jaw, shift with smile/frown
-    const hMouthStretch   = jaw * 40;
-    let expressionYOffset = 0;
-    if      (avgSmile > 0.25) expressionYOffset = -8;
-    else if (avgFrown > 0.25) expressionYOffset =  8;
-
-    ctx.drawImage(
-        targetImage,
-        50, 240, 300, 100,
-        50, 240 + expressionYOffset, 300, 100 + hMouthStretch
-    );
-
-    // Chin — shifts down proportionally with jaw open
-    const chinDestY = Math.min(340 + hMouthStretch, canvas.height - 60);
-    ctx.drawImage(targetImage, 0, 340, 400, 60,  0, chinDestY, 400, 60);
-}
+function clamp01(v){ return Math.max(0, Math.min(1, v)); }
 </script>
 </body>
 </html>
