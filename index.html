@@ -6,25 +6,23 @@
     <title>Face Puppeteer Tracker</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- Load MediaPipe Face Landmarker scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm/vision_bundle.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="app-container">
         <h1>Face Puppeteer: Phone Tracker</h1>
         
         <div class="video-container">
-            <!-- The live camera stream -->
             <video id="webcam" autoplay playsinline></video>
             <button id="startButton">Start Camera</button>
         </div>
 
-        <!-- This box will display your real-time head rotation & mouth values -->
         <div id="data-output">
             <h3>Live Tracking Data</h3>
-            <pre id="coordinates">Click "Start Camera" to initialize tracking...</pre>
+            <pre id="coordinates">Initializing tracking engine...</pre>
         </div>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
