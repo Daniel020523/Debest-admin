@@ -20,9 +20,16 @@
         
         .dashboard {
             display: flex;
+            flex-direction: column; /* Stacked layout for great mobile compatibility */
             gap: 20px;
             max-width: 900px;
             width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard {
+                flex-direction: row; /* Side-by-side split screen layout for laptops/tablets */
+            }
         }
         
         .canvas-container {
@@ -35,9 +42,9 @@
             align-items: center;
             min-height: 400px;
             border: 2px solid #334155;
+            perspective: 800px; /* Gives 3D depth to the face rotations */
         }
         
-        /* The avatar circle placeholder */
         #puppet-face {
             width: 150px;
             height: 150px;
@@ -45,6 +52,7 @@
             border-radius: 50%;
             position: relative;
             transition: transform 0.05s linear;
+            transform-style: preserve-3d;
         }
         
         .eye {
@@ -76,7 +84,7 @@
         }
 
         .data-card {
-            width: 300px;
+            flex: 1;
             background-color: #1e293b;
             border-radius: 12px;
             padding: 20px;
@@ -118,37 +126,32 @@
         const SUPABASE_URL = "https://dmavecishluzeqdddaqy.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aTPFO65SpkKXmku2Nm7XGQ_tgRcXpFg";
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Verified Fix: Safely pulling creation module straight from window memory
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const statusDiv = document.getElementById("status");
         const streamLog = document.getElementById("stream-log");
         
-        // DOM element hooks for the puppet components
         const puppetFace = document.getElementById("puppet-face");
         const eyeLeft = document.getElementById("eye-left");
         const eyeRight = document.getElementById("eye-right");
         const mouth = document.getElementById("mouth");
 
-        // Open up the exact same communication room
-        const faceChannel = supabase.channel('puppeteer-room-1');
+        const faceChannel = client.channel('puppeteer-room-1');
 
         faceChannel
           .on('broadcast', { event: 'face-move' }, (response) => {
               const data = response.payload;
               
-              // 1. Log the values onto our terminal readout
               streamLog.innerText = JSON.stringify(data, null, 2);
               
-              // 2. Animate head rotation (Yaw = turn, Pitch = tilt)
-              // We translate radians into visual CSS degrees
               const degYaw = data.rotation.yaw * (180 / Math.PI) * 1.5;
               const degPitch = data.rotation.pitch * (180 / Math.PI) * 1.5;
               puppetFace.style.transform = `rotateY(${degYaw}deg) rotateX(${degPitch}deg)`;
               
-              // 3. Morph expressions (Mouth open scaling layout)
               const mouthHeight = 15 + (data.expressions.jawOpen * 40);
               mouth.style.height = `${mouthHeight}px`;
               
-              // 4. Handle eye blinking transformations
               if (data.expressions.eyeBlinkLeft > 0.5) {
                   eyeLeft.style.height = "2px";
               } else {
