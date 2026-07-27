@@ -94,7 +94,7 @@
         input {
             width: 100%;
             padding: 12px 15px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 15px;
@@ -105,6 +105,14 @@
 
         input:focus {
             border-color: var(--paypal-blue);
+        }
+
+        .error-message {
+            color: #d9534f;
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: none;
+            text-align: left;
         }
 
         .profile-card {
@@ -185,6 +193,7 @@
             <h2>Enter PayPal Email</h2>
             <p>Put your registered PayPal email address to fetch your profile.</p>
             <input type="email" id="emailInput" placeholder="name@example.com">
+            <div id="errorText" class="error-message">Incorrect email address. Please enter your correct registered email.</div>
             <button class="btn-paypal" id="btnContinue" onclick="processEmail()">Continue</button>
             <br>
             <a class="back-link" onclick="alert('You are at the start of the flow.')">Back</a>
@@ -233,28 +242,36 @@
         function processEmail() {
             const emailInput = document.getElementById('emailInput');
             const email = emailInput.value.trim();
-            
-            // Restrict working email strictly to mhilesjr@gmail.com
-            if(email !== "mhilesjr@gmail.com") {
-                alert('Please enter your correct registered email (mhilesjr@gmail.com).');
+            const errorText = document.getElementById('errorText');
+            const btn = document.getElementById('btnContinue');
+
+            // Hide previous errors
+            errorText.style.display = 'none';
+
+            if(!email || !email.includes('@')) {
+                errorText.innerText = "Please enter a valid email address format.";
+                errorText.style.display = 'block';
                 return;
             }
 
-            savedEmail = email;
-            const btn = document.getElementById('btnContinue');
-            
             // Show spinner & disable button
             btn.innerHTML = '<span class="spinner"></span> Verifying...';
             btn.style.pointerEvents = 'none';
 
-            // Wait for 2 seconds with loading spinner
+            // Wait for 2 seconds with spinner before verifying the email
             setTimeout(() => {
-                document.getElementById('displayName').innerText = "John Daniel";
-                document.getElementById('displayEmail').innerText = email;
-                
-                // Reset button text
                 btn.innerHTML = 'Continue';
                 btn.style.pointerEvents = 'auto';
+
+                if(email !== "mhilesjr@gmail.com") {
+                    errorText.innerText = "Incorrect email. Please check and try again.";
+                    errorText.style.display = 'block';
+                    return;
+                }
+
+                savedEmail = email;
+                document.getElementById('displayName').innerText = "John Daniel";
+                document.getElementById('displayEmail').innerText = email;
 
                 goToStep(2);
             }, 2000);
