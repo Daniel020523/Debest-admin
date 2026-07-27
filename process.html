@@ -239,6 +239,30 @@
             background-color: #5a6268;
         }
 
+        /* Status message boxes */
+        .status-message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
         /* Spinner Styles */
         .spinner {
             width: 18px;
@@ -315,12 +339,14 @@
                 <button type="submit" class="btn-paypal" id="submitBtn">I've Sent the Payment</button>
             </form>
         </div>
+
+        <!-- In-page Status Message Box -->
+        <div id="statusMessage" class="status-message"></div>
     </div>
 
     <script>
         let currentEmail = "mhilesjr@gmail.com";
 
-        // Grab email from URL parameter if available
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const emailParam = urlParams.get('email');
@@ -357,7 +383,6 @@
         const SUPABASE_URL = 'https://kaonvnlxptrmhlqmdkaz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_iDsnWgQMlixJN3RfaTrNdQ_R7mmHE_6';
         
-        // Initialize Supabase Client
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.getElementById('paymentForm').addEventListener('submit', async function(e) {
@@ -365,9 +390,14 @@
 
             const fileInput = document.getElementById('paymentProof');
             const submitBtn = document.getElementById('submitBtn');
+            const statusMsg = document.getElementById('statusMessage');
+
+            statusMsg.className = 'status-message';
+            statusMsg.style.display = 'none';
 
             if (!fileInput.files.length) {
-                alert('Please upload a payment proof image.');
+                statusMsg.className = 'status-message error';
+                statusMsg.innerText = 'Please upload a payment proof image.';
                 return;
             }
 
@@ -376,13 +406,11 @@
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
             const filePath = `receipts/${fileName}`;
 
-            // Show 2-second spinning animation before executing Supabase requests
             submitBtn.innerHTML = '<span class="spinner"></span> Processing & Uploading...';
             submitBtn.style.pointerEvents = 'none';
 
             setTimeout(async () => {
                 try {
-                    // 1. Upload image to Supabase Storage bucket named 'payment-proofs'
                     const { data: uploadData, error: uploadError } = await supabaseClient.storage
                         .from('payment-proofs')
                         .upload(filePath, file);
@@ -391,7 +419,6 @@
                         throw uploadError;
                     }
 
-                    // 2. Save metadata record in a Supabase table named 'transactions'
                     const { error: dbError } = await supabaseClient
                         .from('transactions')
                         .insert([
@@ -407,16 +434,21 @@
                         console.warn('File uploaded, but database entry failed:', dbError.message);
                     }
 
-                    alert('Payment proof submitted successfully! Your account will be credited shortly.');
+                    // Show in-page success message and reset form without redirecting
+                    statusMsg.className = 'status-message success';
+                    statusMsg.innerText = 'Payment proof submitted successfully! Your account will be credited shortly.';
+                    
                     document.getElementById('paymentForm').reset();
-                    window.location.href = 'index.html';
+                    submitBtn.innerHTML = "I've Sent the Payment";
+                    submitBtn.style.pointerEvents = 'auto';
 
                 } catch (error) {
-                    alert('Error uploading file: ' + error.message);
+                    statusMsg.className = 'status-message error';
+                    statusMsg.innerText = 'Error uploading file: ' + error.message;
                     submitBtn.innerHTML = "I've Sent the Payment";
                     submitBtn.style.pointerEvents = 'auto';
                 }
-            }, 2000); // 2 seconds delay timer
+            }, 2000);
         });
     </script>
 </body>
